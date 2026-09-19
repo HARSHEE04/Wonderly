@@ -1,4 +1,4 @@
-# The Prevengers Backend
+# Wonderly
 
 This repository now contains a clean Node.js + TypeScript backend that implements the Person 4 product engine and persistence layer for the AI creative companion.
 
