@@ -1,114 +1,91 @@
-
 import cv2
-import json
 from pathlib import Path
-from datetime import datetime
 
 from scene_analysis import analyze_image
+from learning_api import send_to_learning_api
 
 
-# Store results inside the computer_vision folder.
+# Save captured photos inside Wonderly/computer_vision/photo_results.
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = BASE_DIR / "photo_results"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+PHOTO_PATH = OUTPUT_DIR / "captured_photo.jpg"
 
 
-def main():
-    """Capture a photograph and automatically generate SceneAnalysis."""
+def capture_photo():
+    """Open the camera and return the saved photo path, or None if cancelled."""
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
-    # Open the webcam.
     camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
     if not camera.isOpened():
-        print("Error: Could not open the webcam.")
-        return
+        print("Error: Could not open the camera.")
+        return None
 
-    print("Camera opened successfully.")
-    print("Press SPACE to capture and analyze a photo.")
-    print("Press Q to quit.")
+    print("Photo mode started.")
+    print("Press SPACE to capture a photo, or Q to quit.")
+
+    saved_path = None
 
     try:
         while True:
             success, frame = camera.read()
 
             if not success:
-                print("Error: Could not read a frame from the webcam.")
+                print("Error: Could not read a frame from the camera.")
                 break
 
             cv2.imshow("Wonderly - Photo Mode", frame)
-
             key = cv2.waitKey(1) & 0xFF
 
-            # Press Q to quit.
-            if key == ord("q"):
+            if key == ord(" "):
+                if cv2.imwrite(str(PHOTO_PATH), frame):
+                    saved_path = str(PHOTO_PATH)
+                    print(f"Photo saved as {PHOTO_PATH}")
+                else:
+                    print("Error: Could not save the photo.")
                 break
 
-            # Press SPACE to capture and analyze the image.
-            if key == 32:
-
-                # Use a timestamp to avoid overwriting old captures.
-                timestamp = datetime.now().strftime(
-                    "%Y%m%d_%H%M%S_%f"
-                )
-
-                image_path = OUTPUT_DIR / f"photo_{timestamp}.jpg"
-                json_path = OUTPUT_DIR / f"scene_{timestamp}.json"
-
-                # Save the original photograph.
-                saved = cv2.imwrite(str(image_path), frame)
-
-                if not saved:
-                    print("Error: Could not save the photograph.")
-                    continue
-
-                print(f"\nPhoto saved: {image_path.name}")
-                print("Analyzing photograph...")
-
-                try:
-                    # Run your existing five OpenCV feature detectors.
-                    scene_analysis = analyze_image(str(image_path))
-
-                    # Save the structured data as a JSON file.
-                    with open(
-                        json_path,
-                        "w",
-                        encoding="utf-8",
-                    ) as output_file:
-                        json.dump(
-                            scene_analysis,
-                            output_file,
-                            indent=2,
-                        )
-
-                    print(f"SceneAnalysis saved: {json_path.name}")
-
-                    # Show a quick summary of detected features.
-                    print("\n===== SCENE ANALYSIS =====")
-
-                    for category in (
-                        "colors",
-                        "shapes",
-                        "lines",
-                        "textures",
-                        "patterns",
-                    ):
-                        print(
-                            f"{category.capitalize()}: "
-                            f"{len(scene_analysis[category])}"
-                        )
-
-                    print("==========================\n")
-
-                except Exception as error:
-                    print(f"Analysis failed: {error}")
+            if key == ord("q"):
+                print("Photo capture cancelled.")
+                break
 
     finally:
-        # Always release the camera when the program exits.
         camera.release()
         cv2.destroyAllWindows()
 
-        print("Photo mode stopped.")
+    return saved_path
+
+
+def main():
+    photo_path = capture_photo()
+
+    if photo_path is None:
+        print("Photo mode closed.")
+        return
+
+    try:
+        # Step 1: Analyze the photo using Wonderly's existing OpenCV code.
+        scene_analysis = analyze_image(photo_path)
+        print("\nOpenCV analysis completed.")
+
+        # Step 2: Send the analysis to Wonderly's backend.
+        print("Sending results to Wonderly...")
+        learning_content = send_to_learning_api(scene_analysis)
+
+        # Step 3: Display the backend response.
+        if learning_content is None:
+            print("Could not retrieve learning content from Wonderly.")
+            return
+
+        print("\nWonderly learning content received:")
+        print(learning_content)
+
+    except Exception as error:
+        print(f"Photo analysis error: {error}")
+
+    finally:
+        print("Photo mode closed.")
 
 
 if __name__ == "__main__":
