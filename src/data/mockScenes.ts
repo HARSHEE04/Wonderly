@@ -31,5 +31,22 @@ export const mockScenes: Record<string, SceneAnalysis> = {
     textures: [],
     lines: [],
     patterns: []
+  },
+  // Mock fixture for exercising Learning Mode's OpenAI generation independent of the real OpenCV pipeline.
+  learningModeDemo: {
+    colors: [
+      { id: 'lm-color-1', name: 'burnt orange', hex: '#E67E45' },
+      { id: 'lm-color-2', name: 'slate blue', hex: '#527CA3' }
+    ],
+    shapes: [
+      { id: 'lm-shape-1', label: 'circle' },
+      { id: 'lm-shape-2', label: 'rectangle' }
+    ],
+    textures: [{ id: 'lm-texture-1', label: 'rough / high edge density' }],
+    lines: [
+      { id: 'lm-line-1', orientation: 'vertical' },
+      { id: 'lm-line-2', orientation: 'diagonal' }
+    ],
+    patterns: [{ id: 'lm-pattern-1', patternType: 'repetition' }]
   }
 };

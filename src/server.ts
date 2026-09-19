@@ -16,6 +16,7 @@ import {
   addArtwork
 } from './services/sessionService.js';
 import { learningResourceService } from './services/learningResourceService.js';
+import { generateLearningContent } from './services/learningContentService.js';
 import { validateSceneAnalysis } from './product/engine.js';
 
 const app = express();
@@ -157,6 +158,18 @@ app.get('/api/learning/resources', async (req, res) => {
 
 app.get('/api/mock-scenes/:sceneName', (req, res) => {
   res.json({ success: true, data: getMockScene(req.params.sceneName) });
+});
+
+app.post('/api/learning/content', async (req, res) => {
+  try {
+    const parsed = sceneAnalysisSchema.parse(req.body.sceneAnalysis ?? req.body);
+    validateSceneAnalysis(parsed);
+    const content = await generateLearningContent(parsed);
+    res.json({ success: true, data: content });
+  } catch (error) {
+    const normalized = normalizeError(error);
+    res.status(normalized.statusCode).json({ success: false, error: normalized });
+  }
 });
 
 app.use((error: unknown, _req: express.Request, res: express.Response) => {
