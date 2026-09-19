@@ -114,3 +114,20 @@ export interface GeminiChallengeContext {
     recentChallengeTypes: string[];
   };
 }
+
+export type LearningElementCategory = 'shape' | 'color' | 'line' | 'texture' | 'pattern';
+
+export interface LearningElement {
+  category: LearningElementCategory;
+  name: string;
+  description: string;
+  artisticUse: string;
+  effect: string;
+  howToUse: string;
+  activity: string;
+}
+
+export interface LearningContent {
+  summary: string;
+  elements: LearningElement[];
+}
