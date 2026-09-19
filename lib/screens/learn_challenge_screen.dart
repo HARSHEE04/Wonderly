@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_theme.dart';
 import '../data/mock_data.dart';
 import '../data/models.dart';
@@ -13,42 +14,60 @@ import 'create_reminder_screen.dart';
 class LearnChallengeScreen extends StatelessWidget {
   final ArtConcept concept;
   final LearnSessionResult? sessionResult;
-  const LearnChallengeScreen({super.key, required this.concept, this.sessionResult});
+  const LearnChallengeScreen({
+    super.key,
+    required this.concept,
+    this.sessionResult,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final challenge = challengeForConcept(concept).mergeDecision(sessionResult?.decision);
+    final challenge = challengeForConcept(concept)
+        .mergeDecision(sessionResult?.decision);
     return Scaffold(
       backgroundColor: AppColors.paper,
       body: Stack(
         children: [
           const Positioned.fill(child: PaperTexture()),
           SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 26),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 4),
-                  CircleIconButton(icon: Icons.arrow_back_ios_new_rounded, onTap: () => Navigator.of(context).pop()),
+                  CircleIconButton(
+                    icon: Icons.arrow_back_ios_new_rounded,
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
                   const SizedBox(height: 22),
-                  Text('based on ${concept.title.toLowerCase()}', style: monoLabel(color: concept.accent)),
+                  Text(
+                    'based on ${concept.title.toLowerCase()}',
+                    style: monoLabel(color: concept.accent),
+                  ),
                   const SizedBox(height: 10),
-                  Text(challenge.title, style: editorialDisplay(fontSize: 28)),
+                  Text(challenge.title, style: editorialDisplay(fontSize: 30)),
                   const SizedBox(height: 14),
-                  Text(challenge.instructions, style: sketchBody(fontSize: 14.5)),
+                  Text(
+                    challenge.instructions,
+                    style: sketchBody(fontSize: 16.5),
+                  ),
                   const SizedBox(height: 16),
                   ChallengeTags(challenge: challenge),
-                  const Spacer(),
+                  const SizedBox(height: 40),
                   AtelierButton(
                     label: 'start challenge',
                     fill: AppColors.ink,
-                    onTap: () => Navigator.of(context).push(risePageRoute(CreateReminderScreen(
-                      challenge: challenge,
-                      origin: 'Learn',
-                      conceptTitle: concept.title,
-                      sessionId: sessionResult?.sessionId,
-                    ))),
+                    onTap: () => Navigator.of(context).push(
+                      risePageRoute(
+                        CreateReminderScreen(
+                          challenge: challenge,
+                          origin: 'Learn',
+                          conceptTitle: concept.title,
+                          sessionId: sessionResult?.sessionId,
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 28),
                 ],

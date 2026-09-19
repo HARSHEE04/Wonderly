@@ -144,7 +144,7 @@ class _LearnScanScreenState extends State<LearnScanScreen> {
                                             Text(
                                               markers[i].label.toLowerCase(),
                                               style: monoLabel(
-                                                fontSize: 8.5,
+                                                fontSize: 11,
                                                 color: AppColors.ink,
                                               ),
                                             ),
@@ -186,7 +186,7 @@ class _LearnScanScreenState extends State<LearnScanScreen> {
                   else
                     Text(
                       _revealed
-                          ? 'found a few things — analyzing…'
+                          ? 'found a few things, analyzing…'
                           : 'sweeping the room…',
                       style: monoLabel(color: AppColors.inkSoft),
                     ),

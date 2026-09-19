@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_theme.dart';
 import '../data/mock_data.dart';
 import '../data/models.dart';
@@ -29,7 +30,10 @@ class LearnFoundScreen extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                   child: Row(
                     children: [
-                      CircleIconButton(icon: Icons.arrow_back_ios_new_rounded, onTap: () => Navigator.of(context).pop()),
+                      CircleIconButton(
+                        icon: Icons.arrow_back_ios_new_rounded,
+                        onTap: () => Navigator.of(context).pop(),
+                      ),
                     ],
                   ),
                 ),
@@ -41,15 +45,23 @@ class LearnFoundScreen extends StatelessWidget {
                       children: [
                         Text.rich(
                           TextSpan(
-                            style: sketchDisplay(fontSize: 34),
+                            style: sketchDisplay(fontSize: 36),
                             children: const [
                               TextSpan(text: 'what we '),
-                              TextSpan(text: 'found', style: TextStyle(backgroundColor: Color(0x66FFCB3D))),
+                              TextSpan(
+                                text: 'found',
+                                style: TextStyle(
+                                  backgroundColor: Color(0x66FFCB3D),
+                                ),
+                              ),
                             ],
                           ),
                         ),
                         const SizedBox(height: 6),
-                        Text('${scene.allSwatches.length} elements, ${scene.concepts.length} concepts worth exploring', style: sketchBody(fontSize: 13)),
+                        Text(
+                          '${scene.allSwatches.length} elements, ${scene.concepts.length} concepts worth exploring',
+                          style: sketchBody(fontSize: 15),
+                        ),
                         const SizedBox(height: 22),
                         GridView.count(
                           crossAxisCount: 4,
@@ -57,7 +69,10 @@ class LearnFoundScreen extends StatelessWidget {
                           physics: const NeverScrollableScrollPhysics(),
                           mainAxisSpacing: 8,
                           crossAxisSpacing: 8,
-                          children: [for (final s in scene.allSwatches) AtelierTile(supply: s)],
+                          children: [
+                            for (final s in scene.allSwatches)
+                              AtelierTile(supply: s),
+                          ],
                         ),
                         const SizedBox(height: 28),
                         Text('concepts to explore', style: monoLabel()),
@@ -66,7 +81,12 @@ class LearnFoundScreen extends StatelessWidget {
                           _ConceptRow(
                             concept: concept,
                             onTap: () => Navigator.of(context).push(
-                              risePageRoute(LearnConceptScreen(concept: concept, sessionResult: sessionResult)),
+                              risePageRoute(
+                                LearnConceptScreen(
+                                  concept: concept,
+                                  sessionResult: sessionResult,
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -98,7 +118,10 @@ class _ConceptRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(color: AppColors.paperTile, borderRadius: BorderRadius.circular(16)),
+          decoration: BoxDecoration(
+            color: AppColors.paperTile,
+            borderRadius: BorderRadius.circular(16),
+          ),
           child: Row(
             children: [
               LineIcon(glyph: concept.glyph, size: 28, color: concept.accent),
@@ -107,13 +130,24 @@ class _ConceptRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(concept.title, style: sketchBody(fontSize: 14, weight: FontWeight.w700, color: AppColors.ink)),
+                    Text(
+                      concept.title,
+                      style: sketchBody(
+                        fontSize: 16,
+                        weight: FontWeight.w700,
+                        color: AppColors.ink,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(concept.blurb, style: sketchBody(fontSize: 11.5)),
+                    Text(concept.blurb, style: sketchBody(fontSize: 13.5)),
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward_rounded, size: 16, color: AppColors.ink.withValues(alpha: 0.4)),
+              Icon(
+                Icons.arrow_forward_rounded,
+                size: 16,
+                color: AppColors.ink.withValues(alpha: 0.4),
+              ),
             ],
           ),
         ),

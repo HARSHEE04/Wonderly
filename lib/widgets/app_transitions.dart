@@ -6,7 +6,10 @@ Route<T> risePageRoute<T>(Widget page) {
     reverseTransitionDuration: const Duration(milliseconds: 320),
     pageBuilder: (_, _, _) => page,
     transitionsBuilder: (_, animation, _, child) {
-      final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+      );
       return FadeTransition(
         opacity: curved,
         child: SlideTransition(

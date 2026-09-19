@@ -14,7 +14,7 @@ class WashiTape extends StatelessWidget {
 
   const WashiTape({
     super.key,
-    this.color = AppColors.coral,
+    this.color = AppColors.tapePink,
     this.angle = -0.16,
     this.width = 17,
     this.height = 36,
@@ -29,7 +29,7 @@ class WashiTape extends StatelessWidget {
           width: width,
           height: height,
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.6),
+            color: color.withValues(alpha: 0.88),
             boxShadow: [
               BoxShadow(
                 color: AppColors.ink.withValues(alpha: 0.15),

@@ -64,11 +64,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('your library', style: sketchDisplay(fontSize: 32)),
+                      Text('your library', style: sketchDisplay(fontSize: 34)),
                       const SizedBox(height: 6),
                       Text(
                         '${items.length} pages in your creative journey',
-                        style: sketchBody(fontSize: 13),
+                        style: sketchBody(fontSize: 15),
                       ),
                     ],
                   ),
@@ -85,7 +85,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                 crossAxisCount: 2,
                                 mainAxisSpacing: 16,
                                 crossAxisSpacing: 16,
-                                childAspectRatio: 0.78,
+                                childAspectRatio: 0.56,
                               ),
                           itemCount: items.length,
                           itemBuilder: (context, i) => _LibraryCard(
@@ -111,8 +111,8 @@ class _LibraryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tapeColor = entry.origin == 'Create'
-        ? AppColors.coral
-        : AppColors.sky;
+        ? AppColors.tapePurple
+        : AppColors.tapeGreen;
     final card = Container(
       decoration: BoxDecoration(
         color: AppColors.paperLight,
@@ -154,7 +154,7 @@ class _LibraryCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: sketchBody(
-                      fontSize: 12.5,
+                      fontSize: 14,
                       weight: FontWeight.w700,
                       color: AppColors.ink,
                     ),
@@ -166,14 +166,14 @@ class _LibraryCard extends StatelessWidget {
                         : entry.origin,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: sketchBody(fontSize: 10),
+                    style: sketchBody(fontSize: 11.5),
                   ),
                   const Spacer(),
                   Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
+                          horizontal: 5,
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
@@ -184,13 +184,16 @@ class _LibraryCard extends StatelessWidget {
                         ),
                         child: Text(
                           entry.origin.toLowerCase(),
-                          style: monoLabel(fontSize: 7.5),
+                          style: monoLabel(fontSize: 9.5, letterSpacing: 0.8),
                         ),
                       ),
-                      const Spacer(),
-                      Text(
-                        _formatDate(entry.date),
-                        style: monoLabel(fontSize: 7.5),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _formatDate(entry.date),
+                          textAlign: TextAlign.right,
+                          style: monoLabel(fontSize: 9.5, letterSpacing: 0.8),
+                        ),
                       ),
                     ],
                   ),

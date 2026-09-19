@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
+
 import '../theme/app_theme.dart';
 import '../widgets/app_transitions.dart';
 import '../widgets/line_icon.dart';
@@ -15,9 +17,18 @@ class LearnAnalyzingScreen extends StatefulWidget {
   State<LearnAnalyzingScreen> createState() => _LearnAnalyzingScreenState();
 }
 
-class _LearnAnalyzingScreenState extends State<LearnAnalyzingScreen> with SingleTickerProviderStateMixin {
-  late final AnimationController _spin = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat();
-  final List<String> _steps = const ['reading colors', 'tracing shapes', 'noticing patterns', 'finding concepts'];
+class _LearnAnalyzingScreenState extends State<LearnAnalyzingScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _spin = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 2),
+  )..repeat();
+  final List<String> _steps = const [
+    'reading colors',
+    'tracing shapes',
+    'noticing patterns',
+    'finding concepts',
+  ];
   int _step = 0;
   Timer? _timer;
   late final Future<LearnSessionResult?> _sessionFuture;
@@ -34,7 +45,9 @@ class _LearnAnalyzingScreenState extends State<LearnAnalyzingScreen> with Single
       if (!mounted) return;
       final result = await _sessionFuture;
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(risePageRoute(LearnFoundScreen(sessionResult: result)));
+      Navigator.of(
+        context,
+      ).pushReplacement(risePageRoute(LearnFoundScreen(sessionResult: result)));
     });
   }
 
@@ -43,7 +56,10 @@ class _LearnAnalyzingScreenState extends State<LearnAnalyzingScreen> with Single
   /// any failure (backend offline) so the Learn flow still works locally.
   Future<LearnSessionResult?> _startBackendSession() async {
     try {
-      final sessionId = await ApiClient().createSession(userId: demoUserId, mode: 'learning');
+      final sessionId = await ApiClient().createSession(
+        userId: demoUserId,
+        mode: 'learning',
+      );
       final decision = await ApiClient().postSceneAnalysis(
         sessionId: sessionId,
         scene: mockSceneAnalysis.toApiJson(),
@@ -71,12 +87,16 @@ class _LearnAnalyzingScreenState extends State<LearnAnalyzingScreen> with Single
           children: [
             RotationTransition(
               turns: _spin,
-              child: LineIcon(glyph: IconGlyph.spark, size: 46, color: AppColors.sky),
+              child: LineIcon(
+                glyph: IconGlyph.spark,
+                size: 46,
+                color: AppColors.sky,
+              ),
             ),
             const SizedBox(height: 20),
             Text('analyzing your scene', style: monoLabel()),
             const SizedBox(height: 8),
-            Text(_steps[_step], style: sketchDisplay(fontSize: 18)),
+            Text(_steps[_step], style: sketchDisplay(fontSize: 20)),
           ],
         ),
       ),

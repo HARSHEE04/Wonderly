@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_theme.dart';
 import '../data/mock_data.dart';
 import '../data/models.dart';
@@ -7,7 +8,10 @@ import '../widgets/app_transitions.dart';
 import '../widgets/atelier_button.dart';
 import '../widgets/challenge_tags.dart';
 import '../widgets/circle_icon_button.dart';
+import '../widgets/highlight_marker.dart';
+import '../widgets/line_icon.dart';
 import '../widgets/paper_texture.dart';
+import '../widgets/sticky_note.dart';
 import 'create_reminder_screen.dart';
 
 class CreateChallengeScreen extends StatelessWidget {
@@ -17,11 +21,17 @@ class CreateChallengeScreen extends StatelessWidget {
   /// challenge for the (still mocked) scene, merging its verdict into the
   /// locally-authored copy. Falls back to the plain mock challenge, with no
   /// session id, if the backend is unreachable.
-  Future<void> _startChallenge(BuildContext context, CreativeChallenge challenge) async {
+  Future<void> _startChallenge(
+    BuildContext context,
+    CreativeChallenge challenge,
+  ) async {
     String? sessionId;
     CreativeChallenge finalChallenge = challenge;
     try {
-      final id = await ApiClient().createSession(userId: demoUserId, mode: 'creative');
+      final id = await ApiClient().createSession(
+        userId: demoUserId,
+        mode: 'creative',
+      );
       final decision = await ApiClient().recommendChallenge(
         scene: mockSceneAnalysis.toApiJson(),
         userId: demoUserId,
@@ -32,7 +42,11 @@ class CreateChallengeScreen extends StatelessWidget {
       // backend unavailable — proceed with the local mock challenge
     }
     if (!context.mounted) return;
-    Navigator.of(context).push(risePageRoute(CreateReminderScreen(challenge: finalChallenge, sessionId: sessionId)));
+    Navigator.of(context).push(
+      risePageRoute(
+        CreateReminderScreen(challenge: finalChallenge, sessionId: sessionId),
+      ),
+    );
   }
 
   @override
@@ -44,25 +58,55 @@ class CreateChallengeScreen extends StatelessWidget {
         children: [
           const Positioned.fill(child: PaperTexture()),
           SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 26),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 4),
-                  CircleIconButton(icon: Icons.arrow_back_ios_new_rounded, onTap: () => Navigator.of(context).pop()),
-                  const SizedBox(height: 22),
-                  Text('create · daily challenge', style: monoLabel()),
-                  const SizedBox(height: 10),
-                  Text(challenge.title, style: editorialDisplay(fontSize: 30)),
-                  const SizedBox(height: 14),
-                  Text(challenge.instructions, style: sketchBody(fontSize: 14.5)),
-                  const SizedBox(height: 16),
-                  ChallengeTags(challenge: challenge),
-                  const Spacer(),
+                  CircleIconButton(
+                    icon: Icons.arrow_back_ios_new_rounded,
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(height: 26),
+                  StickyNote(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('create · daily challenge', style: monoLabel()),
+                        const SizedBox(height: 12),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const LineIcon(glyph: IconGlyph.compass, size: 30),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: HighlightMarker(
+                                child: Text(
+                                  challenge.title,
+                                  style: editorialDisplay(fontSize: 30),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          challenge.instructions,
+                          style: sketchBody(fontSize: 16.5),
+                        ),
+                        const SizedBox(height: 16),
+                        ChallengeTags(challenge: challenge),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 40),
                   Text(
                     'there are no wrong answers here',
-                    style: sketchDisplay(fontSize: 18, color: AppColors.pinkDeep),
+                    style: sketchDisplay(
+                      fontSize: 20,
+                      color: AppColors.pinkDeep,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   AtelierButton(
