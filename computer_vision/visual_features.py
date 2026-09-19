@@ -4,6 +4,8 @@ import math
 
 from color_features import extract_dominant_colors
 from line_features import extract_lines
+from texture_features import extract_textures
+from pattern_features import extract_patterns
 
 
 def classify_shape(contour):
@@ -46,7 +48,9 @@ def classify_shape(contour):
 
     area = cv2.contourArea(contour)
 
-    circularity = (4 * math.pi * area) / (perimeter ** 2)
+    circularity = (
+        4 * math.pi * area / (perimeter ** 2)
+    )
 
     if circularity >= 0.80:
         return "circle"
@@ -81,11 +85,19 @@ def is_duplicate_shape(new_shape, existing_shapes):
 
 def extract_visual_features(frame):
     """
-    Extract contours, geometric shapes, dominant colors,
-    and straight lines from an image.
+    Extract five categories of visual features:
+
+    1. Shapes
+    2. Colors
+    3. Lines
+    4. Textures
+    5. Patterns
+
+    Also returns the original contour data and
+    an annotated image for debugging.
     """
 
-    # STEP 1: Convert the image to grayscale and reduce noise.
+    # STEP 1: Prepare the image.
 
     gray = cv2.cvtColor(
         frame,
@@ -122,7 +134,8 @@ def extract_visual_features(frame):
 
     annotated_frame = frame.copy()
 
-    # Draw all significant contours in green.
+    # Draw contour outlines in green.
+
     cv2.drawContours(
         annotated_frame,
         significant_contours,
@@ -164,13 +177,13 @@ def extract_visual_features(frame):
             "area": area,
         }
 
-        # Skip duplicate detections of the same shape.
         if is_duplicate_shape(shape, shapes):
             continue
 
         shapes.append(shape)
 
         # Draw the bounding box in blue.
+
         cv2.rectangle(
             annotated_frame,
             (x, y),
@@ -179,7 +192,8 @@ def extract_visual_features(frame):
             2,
         )
 
-        # Write the shape's name in red.
+        # Display the shape label in red.
+
         cv2.putText(
             annotated_frame,
             shape_name,
@@ -190,28 +204,48 @@ def extract_visual_features(frame):
             2,
         )
 
-    # STEP 5: Extract dominant colors from the original image.
+    # STEP 5: Extract dominant colors.
 
     colors = extract_dominant_colors(
         frame,
         num_colors=5,
     )
 
-    # STEP 6: Detect straight lines and their orientations.
+    # STEP 6: Detect straight lines.
 
     lines = extract_lines(frame)
 
-    # STEP 7: Return all detected visual features.
+    # STEP 7: Measure visual textures.
+
+    textures = extract_textures(
+        frame,
+        grid_size=2,
+    )
+
+    # STEP 8: Detect repeated visual patterns.
+
+    patterns = extract_patterns(frame)
+
+    # STEP 9: Return all features.
 
     return {
         "edges": edges,
         "contours": significant_contours,
         "annotated_frame": annotated_frame,
         "contour_count": len(significant_contours),
+
         "shapes": shapes,
         "shape_count": len(shapes),
+
         "colors": colors,
         "color_count": len(colors),
+
         "lines": lines,
         "line_count": len(lines),
+
+        "textures": textures,
+        "texture_count": len(textures),
+
+        "patterns": patterns,
+        "pattern_count": len(patterns),
     }
