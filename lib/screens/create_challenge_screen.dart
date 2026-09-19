@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../data/mock_data.dart';
 import '../data/models.dart';
-import '../services/api_client.dart';
 import '../widgets/app_transitions.dart';
 import '../widgets/atelier_button.dart';
 import '../widgets/challenge_tags.dart';
@@ -15,43 +14,18 @@ import '../widgets/sticky_note.dart';
 import 'create_reminder_screen.dart';
 
 class CreateChallengeScreen extends StatelessWidget {
-  const CreateChallengeScreen({super.key});
+  /// The scan-based challenge to show, already resolved by
+  /// [LearnAnalyzingScreen] (origin 'Create') before navigating here. Falls
+  /// back to the local mock challenge if this screen is ever opened without
+  /// scanning first.
+  final CreativeChallenge? challenge;
+  final String? sessionId;
 
-  /// Starts a real 'creative' session and asks the backend to recommend a
-  /// challenge for the (still mocked) scene, merging its verdict into the
-  /// locally-authored copy. Falls back to the plain mock challenge, with no
-  /// session id, if the backend is unreachable.
-  Future<void> _startChallenge(
-    BuildContext context,
-    CreativeChallenge challenge,
-  ) async {
-    String? sessionId;
-    CreativeChallenge finalChallenge = challenge;
-    try {
-      final id = await ApiClient().createSession(
-        userId: demoUserId,
-        mode: 'creative',
-      );
-      final decision = await ApiClient().recommendChallenge(
-        scene: mockSceneAnalysis.toApiJson(),
-        userId: demoUserId,
-      );
-      sessionId = id;
-      finalChallenge = challenge.mergeDecision(decision);
-    } catch (_) {
-      // backend unavailable — proceed with the local mock challenge
-    }
-    if (!context.mounted) return;
-    Navigator.of(context).push(
-      risePageRoute(
-        CreateReminderScreen(challenge: finalChallenge, sessionId: sessionId),
-      ),
-    );
-  }
+  const CreateChallengeScreen({super.key, this.challenge, this.sessionId});
 
   @override
   Widget build(BuildContext context) {
-    final challenge = mockDailyChallenge;
+    final resolvedChallenge = challenge ?? mockDailyChallenge;
     return Scaffold(
       backgroundColor: AppColors.paper,
       body: Stack(
@@ -83,7 +57,7 @@ class CreateChallengeScreen extends StatelessWidget {
                             Expanded(
                               child: HighlightMarker(
                                 child: Text(
-                                  challenge.title,
+                                  resolvedChallenge.title,
                                   style: editorialDisplay(fontSize: 30),
                                 ),
                               ),
@@ -92,11 +66,11 @@ class CreateChallengeScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 14),
                         Text(
-                          challenge.instructions,
+                          resolvedChallenge.instructions,
                           style: sketchBody(fontSize: 16.5),
                         ),
                         const SizedBox(height: 16),
-                        ChallengeTags(challenge: challenge),
+                        ChallengeTags(challenge: resolvedChallenge),
                       ],
                     ),
                   ),
@@ -112,7 +86,14 @@ class CreateChallengeScreen extends StatelessWidget {
                   AtelierButton(
                     label: 'start challenge',
                     fill: AppColors.ink,
-                    onTap: () => _startChallenge(context, challenge),
+                    onTap: () => Navigator.of(context).push(
+                      risePageRoute(
+                        CreateReminderScreen(
+                          challenge: resolvedChallenge,
+                          sessionId: sessionId,
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 28),
                 ],

@@ -181,6 +181,57 @@ CreativeChallenge challengeForConcept(ArtConcept concept) {
   };
 }
 
+/// Authored copy for each backend `ChallengeType` (`src/product/engine.ts`),
+/// used by the Create flow once a scan comes back with a real recommendation.
+/// Same stand-in role as [challengeForConcept]: the backend only returns a
+/// type and a difficulty, not the actual prompt copy, so this fills that gap
+/// until the real Gemini handoff exists.
+CreativeChallenge challengeForType(String challengeType) {
+  return switch (challengeType) {
+    'character' => const CreativeChallenge(
+      title: 'Build a Character From What You See',
+      instructions:
+          'Look at the shapes, colors, and textures around you, then sketch a character built entirely '
+          'from those ingredients. Let the scene decide what it looks like.',
+      difficulty: 3,
+      challengeType: 'character',
+    ),
+    'poster' => const CreativeChallenge(
+      title: 'Make a Poster From This Room',
+      instructions:
+          'Pick the boldest color and the strongest pattern you can find nearby, then design a poster '
+          'built only from those two things.',
+      difficulty: 2,
+      challengeType: 'poster',
+    ),
+    'architecture' => const CreativeChallenge(
+      title: 'Chase the Vanishing Point',
+      instructions:
+          'Pick a row of things that recede into the distance, like a fence, a hallway, or a row of windows. '
+          'Sketch it letting every line converge toward a single point on the horizon.',
+      difficulty: 3,
+      challengeType: 'architecture',
+    ),
+    'abstract' => const CreativeChallenge(
+      title: 'Turn a Color Into a Feeling',
+      instructions:
+          'Pick one color from your surroundings and sketch an abstract piece using only shapes and marks, '
+          'no recognizable objects, that capture how that color makes you feel.',
+      difficulty: 2,
+      challengeType: 'abstract',
+    ),
+    'pattern' => const CreativeChallenge(
+      title: 'Repeat Something Small',
+      instructions:
+          'Find one small repeating detail nearby, like tiles, leaves, or stitching, and build a pattern from it, '
+          'exaggerating the repetition until it becomes its own texture.',
+      difficulty: 2,
+      challengeType: 'pattern',
+    ),
+    _ => mockDailyChallenge,
+  };
+}
+
 List<LibraryEntry> buildSeedLibrary() => [
   LibraryEntry(
     id: 'seed-1',

@@ -13,7 +13,12 @@ import 'learn_analyzing_screen.dart';
 
 class LearnScanScreen extends StatefulWidget {
   final ScanMode mode;
-  const LearnScanScreen({super.key, required this.mode});
+
+  /// 'Learn' (default) leads into the concept-teaching flow after
+  /// analyzing; 'Create' leads straight into a single scan-based challenge.
+  final String origin;
+
+  const LearnScanScreen({super.key, required this.mode, this.origin = 'Learn'});
 
   @override
   State<LearnScanScreen> createState() => _LearnScanScreenState();
@@ -35,8 +40,9 @@ class _LearnScanScreenState extends State<LearnScanScreen> {
 
   void _goToAnalyzing() {
     if (!mounted) return;
-    Navigator.of(context)
-        .pushReplacement(risePageRoute(const LearnAnalyzingScreen()));
+    Navigator.of(context).pushReplacement(
+      risePageRoute(LearnAnalyzingScreen(origin: widget.origin)),
+    );
   }
 
   @override

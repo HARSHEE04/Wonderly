@@ -8,10 +8,15 @@ import '../widgets/line_icon.dart';
 import '../data/mock_data.dart';
 import '../data/models.dart';
 import '../services/api_client.dart';
+import 'create_challenge_screen.dart';
 import 'learn_found_screen.dart';
 
 class LearnAnalyzingScreen extends StatefulWidget {
-  const LearnAnalyzingScreen({super.key});
+  /// 'Learn' (default) leads into the concept-teaching flow; 'Create' leads
+  /// straight into a single scan-based challenge.
+  final String origin;
+
+  const LearnAnalyzingScreen({super.key, this.origin = 'Learn'});
 
   @override
   State<LearnAnalyzingScreen> createState() => _LearnAnalyzingScreenState();
@@ -45,20 +50,34 @@ class _LearnAnalyzingScreenState extends State<LearnAnalyzingScreen>
       if (!mounted) return;
       final result = await _sessionFuture;
       if (!mounted) return;
-      Navigator.of(
-        context,
-      ).pushReplacement(risePageRoute(LearnFoundScreen(sessionResult: result)));
+      if (widget.origin == 'Create') {
+        final challenge = challengeForType(
+          result?.decision?['challengeType'] as String? ?? 'composition',
+        ).mergeDecision(result?.decision);
+        Navigator.of(context).pushReplacement(
+          risePageRoute(
+            CreateChallengeScreen(
+              challenge: challenge,
+              sessionId: result?.sessionId,
+            ),
+          ),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          risePageRoute(LearnFoundScreen(sessionResult: result)),
+        );
+      }
     });
   }
 
   /// Creates a real backend session and posts the (still mocked) scene
   /// analysis to get a real `ChallengeDecision` back. Falls back to null on
-  /// any failure (backend offline) so the Learn flow still works locally.
+  /// any failure (backend offline) so this flow still works locally.
   Future<LearnSessionResult?> _startBackendSession() async {
     try {
       final sessionId = await ApiClient().createSession(
         userId: demoUserId,
-        mode: 'learning',
+        mode: widget.origin == 'Create' ? 'creative' : 'learning',
       );
       final decision = await ApiClient().postSceneAnalysis(
         sessionId: sessionId,

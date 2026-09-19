@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../data/models.dart';
 import '../widgets/app_transitions.dart';
 import '../widgets/atelier_button.dart';
 import '../widgets/brand_mark.dart';
 import '../widgets/circle_icon_button.dart';
+import '../widgets/line_icon.dart';
 import '../widgets/paper_texture.dart';
-import 'create_challenge_screen.dart';
 import 'learn_mode_screen.dart';
+import 'learn_scan_screen.dart';
 import 'library_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -74,15 +76,19 @@ class HomeScreen extends StatelessWidget {
                                     color: AppColors.ink,
                                   ),
                                 ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Explore the world around you, discover something new, and create.',
-                                  textAlign: TextAlign.center,
-                                  style: sketchBody(
-                                    fontSize: 16,
-                                    weight: FontWeight.w600,
-                                    color: AppColors.inkSoft,
-                                  ),
+                                const SizedBox(height: 20),
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    _ChecklistItem(
+                                      'Explore the world around you',
+                                    ),
+                                    SizedBox(height: 10),
+                                    _ChecklistItem('Discover something new'),
+                                    SizedBox(height: 10),
+                                    _ChecklistItem('Create'),
+                                  ],
                                 ),
                               ],
                             ),
@@ -95,7 +101,12 @@ class HomeScreen extends StatelessWidget {
                             tapeColor: AppColors.tapePink,
                             tapeOnLeft: true,
                             onTap: () => Navigator.of(context).push(
-                              risePageRoute(const CreateChallengeScreen()),
+                              risePageRoute(
+                                const LearnScanScreen(
+                                  mode: ScanMode.photo,
+                                  origin: 'Create',
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -119,6 +130,48 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// One row of the onboarding checklist, a small squared checkbox holding a
+/// hand-drawn spark instead of a plain checkmark, paired with a short line
+/// of the "explore, discover, create" promise.
+class _ChecklistItem extends StatelessWidget {
+  final String label;
+  const _ChecklistItem(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: AppColors.paperLight,
+            border: Border.all(color: AppColors.ink, width: 1.4),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Center(
+            child: LineIcon(
+              glyph: IconGlyph.spark,
+              size: 13,
+              color: AppColors.ink,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          label,
+          style: sketchBody(
+            fontSize: 16,
+            weight: FontWeight.w600,
+            color: AppColors.inkSoft,
+          ),
+        ),
+      ],
     );
   }
 }
