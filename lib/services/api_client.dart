@@ -92,12 +92,15 @@ class ApiClient {
     return recommendation?['decision'] as Map<String, dynamic>?;
   }
 
-  Future<Map<String, dynamic>?> recommendChallenge({
-    required Map<String, dynamic> scene,
-    required String userId,
-  }) async {
-    final data = await _post('/api/challenges/recommend', {'sceneAnalysis': scene, 'userId': userId});
-    return data['decision'] as Map<String, dynamic>?;
+  Future<Map<String, dynamic>> createChallengeInstance({
+    required String sessionId,
+    required String title,
+    required String instructions,
+  }) {
+    return _post('/api/sessions/$sessionId/challenge-instance', {
+      'title': title,
+      'instructions': instructions,
+    });
   }
 
   Future<void> completeSession({

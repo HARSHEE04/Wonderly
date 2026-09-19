@@ -3,6 +3,7 @@ import { isMongoConnected } from './mongo.js';
 import {
   UserModel,
   CreativeSessionModel,
+  ChallengeInstanceModel,
   ChallengeCompletionModel,
   ArtworkModel,
   LearningResourceModel,
@@ -10,6 +11,7 @@ import {
 } from './models.js';
 import type {
   ChallengeDecision,
+  ChallengeInstance,
   LearningResource,
   SceneAnalysis,
   LearningProgressRecord,
@@ -45,6 +47,7 @@ export interface CreativeSessionRecord {
 export interface ChallengeCompletionRecord {
   userId: string;
   sessionId: string;
+  challengeInstanceId?: string;
   templateId: string;
   challengeType: string;
   concepts: string[];
@@ -55,6 +58,7 @@ export interface ArtworkRecord {
   id: string;
   userId: string;
   sessionId: string;
+  challengeInstanceId?: string;
   challengeTemplateId: string;
   title?: string;
   assetUrl?: string;
@@ -64,6 +68,7 @@ export interface ArtworkRecord {
 }
 
 const memorySessions = new Map<string, CreativeSessionRecord>();
+const memoryChallengeInstances = new Map<string, ChallengeInstance>();
 const memoryCompletions: ChallengeCompletionRecord[] = [];
 const memoryArtworks: ArtworkRecord[] = [];
 const memoryLearningResources = new Map<string, LearningResource[]>();
@@ -85,6 +90,26 @@ function toSessionRecord(doc: any): CreativeSessionRecord {
     status: doc.status,
     startedAt: doc.startedAt,
     completedAt: doc.completedAt ?? null,
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt
+  };
+}
+
+function toChallengeInstance(doc: any): ChallengeInstance {
+  return {
+    id: doc._id.toString(),
+    userId: doc.userId,
+    sessionId: doc.sessionId,
+    templateId: doc.templateId,
+    challengeType: doc.challengeType,
+    difficulty: doc.difficulty,
+    sourceMode: doc.sourceMode,
+    title: doc.title,
+    instructions: doc.instructions,
+    focusConcepts: doc.focusConcepts ?? [],
+    usedSceneFeatures: doc.usedSceneFeatures ?? [],
+    whyThisFitsScene: doc.whyThisFitsScene ?? [],
+    learningContext: doc.learningContext ?? undefined,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt
   };
@@ -212,6 +237,51 @@ export async function updateSessionDecisionRecord(
   }
 }
 
+export async function createChallengeInstanceRecord(
+  input: Omit<ChallengeInstance, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<ChallengeInstance> {
+  if (useMongo()) {
+    try {
+      const doc = await ChallengeInstanceModel.findOneAndUpdate(
+        { sessionId: input.sessionId },
+        { $setOnInsert: input },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      return toChallengeInstance(doc);
+    } catch (error) {
+      console.warn('Mongo challenge instance upsert failed, falling back to in-memory store:', error);
+    }
+  }
+
+  const existing = memoryChallengeInstances.get(input.sessionId);
+  if (existing) {
+    return existing;
+  }
+
+  const now = new Date();
+  const instance: ChallengeInstance = {
+    id: randomUUID(),
+    ...input,
+    createdAt: now,
+    updatedAt: now
+  };
+  memoryChallengeInstances.set(input.sessionId, instance);
+  return instance;
+}
+
+export async function getChallengeInstanceBySessionRecord(sessionId: string): Promise<ChallengeInstance | undefined> {
+  if (useMongo()) {
+    try {
+      const doc = await ChallengeInstanceModel.findOne({ sessionId });
+      return doc ? toChallengeInstance(doc) : undefined;
+    } catch (error) {
+      console.warn('Mongo challenge instance lookup failed, checking in-memory store:', error);
+    }
+  }
+
+  return memoryChallengeInstances.get(sessionId);
+}
+
 export async function completeSessionRecord(sessionId: string): Promise<void> {
   const now = new Date();
 
@@ -263,6 +333,7 @@ export async function getCompletionsForUser(userId: string): Promise<ChallengeCo
       return docs.map((doc: any) => ({
         userId: doc.userId,
         sessionId: doc.sessionId,
+        challengeInstanceId: doc.challengeInstanceId ?? undefined,
         templateId: doc.templateId,
         challengeType: doc.challengeType,
         concepts: doc.concepts ?? [],
@@ -286,6 +357,7 @@ export async function createArtworkRecord(
         id: doc._id.toString(),
         userId: doc.userId,
         sessionId: doc.sessionId,
+        challengeInstanceId: doc.challengeInstanceId ?? undefined,
         challengeTemplateId: doc.challengeTemplateId,
         title: doc.title,
         assetUrl: doc.assetUrl,
@@ -311,6 +383,7 @@ export async function getArtworksForUserRecord(userId: string): Promise<ArtworkR
         id: doc._id.toString(),
         userId: doc.userId,
         sessionId: doc.sessionId,
+        challengeInstanceId: doc.challengeInstanceId ?? undefined,
         challengeTemplateId: doc.challengeTemplateId,
         title: doc.title,
         assetUrl: doc.assetUrl,

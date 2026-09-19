@@ -13,21 +13,25 @@ import 'create_reminder_screen.dart';
 class CreateChallengeScreen extends StatelessWidget {
   const CreateChallengeScreen({super.key});
 
-  /// Starts a real 'creative' session and asks the backend to recommend a
-  /// challenge for the (still mocked) scene, merging its verdict into the
-  /// locally-authored copy. Falls back to the plain mock challenge, with no
-  /// session id, if the backend is unreachable.
+  /// Starts a real 'creative' session, attaches the still-mocked scene to it,
+  /// and merges the backend's recommendation into the locally-authored copy.
+  /// Falls back to the plain mock challenge if the backend is unreachable.
   Future<void> _startChallenge(BuildContext context, CreativeChallenge challenge) async {
     String? sessionId;
     CreativeChallenge finalChallenge = challenge;
     try {
       final id = await ApiClient().createSession(userId: demoUserId, mode: 'creative');
-      final decision = await ApiClient().recommendChallenge(
+      final decision = await ApiClient().postSceneAnalysis(
+        sessionId: id,
         scene: mockSceneAnalysis.toApiJson(),
-        userId: demoUserId,
+      );
+      finalChallenge = challenge.mergeDecision(decision);
+      await ApiClient().createChallengeInstance(
+        sessionId: id,
+        title: finalChallenge.title,
+        instructions: finalChallenge.instructions,
       );
       sessionId = id;
-      finalChallenge = challenge.mergeDecision(decision);
     } catch (_) {
       // backend unavailable — proceed with the local mock challenge
     }

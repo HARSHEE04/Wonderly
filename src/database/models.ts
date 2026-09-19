@@ -50,10 +50,35 @@ const ChallengeTemplateSchema = new Schema(
   { timestamps: true }
 );
 
+const ChallengeInstanceSchema = new Schema(
+  {
+    userId: { type: String, required: true },
+    sessionId: { type: String, required: true, unique: true },
+    templateId: { type: String, required: true },
+    challengeType: { type: String, required: true },
+    difficulty: { type: Number, required: true },
+    sourceMode: { type: String, enum: ['standalone', 'learning'], required: true },
+    title: { type: String, required: true },
+    instructions: { type: String, required: true },
+    focusConcepts: [{ type: String, default: [] }],
+    usedSceneFeatures: [
+      {
+        _id: false,
+        type: { type: String, required: true },
+        featureId: { type: String, required: true }
+      }
+    ],
+    whyThisFitsScene: [{ type: String, default: [] }],
+    learningContext: { type: Schema.Types.Mixed, default: null }
+  },
+  { timestamps: true }
+);
+
 const ChallengeCompletionSchema = new Schema(
   {
     userId: { type: String, required: true },
     sessionId: { type: String, required: true },
+    challengeInstanceId: { type: String, default: null },
     templateId: { type: String, required: true },
     challengeType: { type: String, required: true },
     concepts: [{ type: String, default: [] }],
@@ -66,6 +91,7 @@ const ArtworkSchema = new Schema(
   {
     userId: { type: String, required: true },
     sessionId: { type: String, required: true },
+    challengeInstanceId: { type: String, default: null },
     challengeTemplateId: { type: String, required: true },
     title: { type: String, default: '' },
     assetUrl: { type: String, default: '' },
@@ -109,6 +135,7 @@ const LearningResourceSchema = new Schema(
 export const UserModel = mongoose.models.User || mongoose.model('User', UserSchema);
 export const CreativeSessionModel = mongoose.models.CreativeSession || mongoose.model('CreativeSession', CreativeSessionSchema);
 export const ChallengeTemplateModel = mongoose.models.ChallengeTemplate || mongoose.model('ChallengeTemplate', ChallengeTemplateSchema);
+export const ChallengeInstanceModel = mongoose.models.ChallengeInstance || mongoose.model('ChallengeInstance', ChallengeInstanceSchema);
 export const ChallengeCompletionModel = mongoose.models.ChallengeCompletion || mongoose.model('ChallengeCompletion', ChallengeCompletionSchema);
 export const ArtworkModel = mongoose.models.Artwork || mongoose.model('Artwork', ArtworkSchema);
 export const LearningProgressModel = mongoose.models.LearningProgress || mongoose.model('LearningProgress', LearningProgressSchema);

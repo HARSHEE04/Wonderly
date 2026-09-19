@@ -43,12 +43,27 @@ class LearnChallengeScreen extends StatelessWidget {
                   AtelierButton(
                     label: 'start challenge',
                     fill: AppColors.ink,
-                    onTap: () => Navigator.of(context).push(risePageRoute(CreateReminderScreen(
-                      challenge: challenge,
-                      origin: 'Learn',
-                      conceptTitle: concept.title,
-                      sessionId: sessionResult?.sessionId,
-                    ))),
+                    onTap: () async {
+                      String? sessionId = sessionResult?.sessionId;
+                      if (sessionId != null) {
+                        try {
+                          await ApiClient().createChallengeInstance(
+                            sessionId: sessionId,
+                            title: challenge.title,
+                            instructions: challenge.instructions,
+                          );
+                        } catch (_) {
+                          sessionId = null;
+                        }
+                      }
+                      if (!context.mounted) return;
+                      Navigator.of(context).push(risePageRoute(CreateReminderScreen(
+                        challenge: challenge,
+                        origin: 'Learn',
+                        conceptTitle: concept.title,
+                        sessionId: sessionId,
+                      )));
+                    },
                   ),
                   const SizedBox(height: 28),
                 ],

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildCreativeGenerationContext,
   buildPersonalizationContext,
   defaultChallengeTemplates,
   getEligibleChallenges,
@@ -112,6 +113,24 @@ describe('product engine', () => {
 
     expect(context.underusedConcepts.length).toBeGreaterThan(0);
     expect(context.recentChallengeTypes.length).toBeGreaterThan(0);
+  });
+
+  it('builds a provider-neutral creative generation context without learning context', () => {
+    const recommendation = recommendChallenge(characterScene);
+    const decision = recommendation.decision;
+
+    if (!decision) {
+      throw new Error('Expected a deterministic challenge decision');
+    }
+
+    const context = buildCreativeGenerationContext('session-123', characterScene, decision);
+
+    expect(context.sessionId).toBe('session-123');
+    expect(context.sourceMode).toBe('standalone');
+    expect(context.selectedSceneFeatures).toEqual(characterScene);
+    expect(context.challengeDecision).toEqual(decision);
+    expect(context.personalization).toEqual(decision.personalizationContext);
+    expect(context.learningContext).toBeUndefined();
   });
 
   it('summarizes progress exposure counts', () => {
