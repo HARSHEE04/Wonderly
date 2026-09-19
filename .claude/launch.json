@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "flutter-web",
+      "runtimeExecutable": "/Users/norahalowibdi/flutter/bin/flutter",
+      "runtimeArgs": ["run", "-d", "web-server", "--web-port", "5500", "--web-hostname", "127.0.0.1"],
+      "port": 5500
+    }
+  ]
+}

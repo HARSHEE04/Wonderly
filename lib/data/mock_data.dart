@@ -1,0 +1,158 @@
+import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
+import 'models.dart';
+
+/// Stand-in for the teammate-owned CV/Gemini scene-analysis pipeline.
+/// Shape and sample values mirror `mockScenes.characterFriendly` in the
+/// backend's `src/data/mockScenes.ts` (forest green / circle / concrete /
+/// vertical line / plant pot), extended with a `patterns` example and the
+/// concept tags a matching `ChallengeTemplate` would carry.
+final SceneAnalysis mockSceneAnalysis = SceneAnalysis(
+  colors: const [
+    Supply(label: 'Forest Green', kind: SwatchKind.color, color: AppColors.forestGreen, glyph: IconGlyph.circle),
+    Supply(label: 'Warm Yellow', kind: SwatchKind.color, color: AppColors.yellow, glyph: IconGlyph.circle),
+    Supply(label: 'Dusty Pink', kind: SwatchKind.color, color: AppColors.pink, glyph: IconGlyph.circle),
+  ],
+  shapes: const [
+    Supply(label: 'Circle', kind: SwatchKind.shape, color: AppColors.coral, glyph: IconGlyph.circle),
+    Supply(label: 'Rectangle', kind: SwatchKind.shape, color: AppColors.violet, glyph: IconGlyph.stripes),
+  ],
+  lines: const [
+    Supply(label: 'Vertical Lines', kind: SwatchKind.line, color: AppColors.sky, glyph: IconGlyph.lines),
+  ],
+  textures: const [
+    Supply(label: 'Concrete', kind: SwatchKind.texture, color: Color(0xFFB9B3A6), glyph: IconGlyph.wave),
+    Supply(label: 'Leaves', kind: SwatchKind.texture, color: AppColors.forestGreen, glyph: IconGlyph.plant),
+  ],
+  patterns: const [
+    Supply(label: 'Repetition', kind: SwatchKind.pattern, color: AppColors.pinkDeep, glyph: IconGlyph.stripes),
+  ],
+  objects: const [
+    Supply(label: 'Plant Pot', kind: SwatchKind.object, color: AppColors.forestGreen, glyph: IconGlyph.plant),
+  ],
+  concepts: const [
+    ArtConcept(
+      id: 'symmetry',
+      title: 'Symmetry',
+      blurb: 'Both sides of that building mirror each other.',
+      glyph: IconGlyph.symmetry,
+      accent: AppColors.sky,
+    ),
+    ArtConcept(
+      id: 'composition',
+      title: 'Composition',
+      blurb: 'The doorway sits right where these lines cross.',
+      glyph: IconGlyph.lines,
+      accent: AppColors.violet,
+    ),
+    ArtConcept(
+      id: 'perspective',
+      title: 'Perspective',
+      blurb: 'Those vertical lines all lead toward one point.',
+      glyph: IconGlyph.perspective,
+      accent: AppColors.pinkDeep,
+    ),
+  ],
+);
+
+/// Mirrors `demoResources` in the backend's `src/data/seed.ts` — the exact
+/// fallback content `learningResourceService.getResourcesForConcept` serves
+/// when Firecrawl isn't configured. Only these three concepts have real demo
+/// coverage on the backend today.
+final Map<String, LearningResource> mockLearningResources = {
+  'symmetry': const LearningResource(
+    concept: 'symmetry',
+    title: 'Symmetry in Art: A Beginner Guide',
+    url: 'tate.org.uk/art/student-resource/starting-out/symmetry',
+    source: 'Tate',
+    summary: 'An overview of symmetry and balance in visual art.',
+  ),
+  'composition': const LearningResource(
+    concept: 'composition',
+    title: 'Composition in Art',
+    url: 'tate.org.uk/art/student-resource/starting-out/composition',
+    source: 'Tate',
+    summary: 'An introduction to composition and layout principles for visual work.',
+  ),
+  'perspective': const LearningResource(
+    concept: 'perspective',
+    title: 'Perspective in Drawing',
+    url: 'khanacademy.org/humanities/art-architecture/artist-work/figure-drawing',
+    source: 'Khan Academy',
+    summary: 'A practical explanation of perspective in drawing and composition.',
+  ),
+};
+
+/// Stand-in for the teammate-owned challenge-generation logic. Modeled on
+/// `tpl-composition` in `src/product/engine.ts` (concepts: composition,
+/// perspective, symmetry — difficulty 2) with mocked Gemini-style copy.
+const CreativeChallenge mockDailyChallenge = CreativeChallenge(
+  title: 'Find a Symmetrical Object',
+  instructions:
+      'Look around you for something whose two halves mirror each other — a window, a doorway, a leaf. '
+      'Sketch it on paper, in Procreate, or on an iPad, exaggerating the mirror line.',
+  difficulty: 2,
+  challengeType: 'composition',
+);
+
+CreativeChallenge challengeForConcept(ArtConcept concept) {
+  return switch (concept.id) {
+    'symmetry' => const CreativeChallenge(
+        title: 'Draw Its Mirror',
+        instructions:
+            'Sketch only the left half of a symmetrical object you can see, then fold your page (or flip a layer) '
+            'to complete the right half. Notice what feels different about the "perfect" half versus the hand-drawn one.',
+        difficulty: 2,
+        challengeType: 'pattern',
+        inspiredByConcept: 'Symmetry',
+      ),
+    'composition' => const CreativeChallenge(
+        title: 'Frame the Intersection',
+        instructions:
+            'Find a spot where two or more lines in your surroundings cross — a window frame, a curb, a shadow. '
+            'Build your whole sketch around that intersection point instead of centering the obvious subject.',
+        difficulty: 2,
+        challengeType: 'composition',
+        inspiredByConcept: 'Composition',
+      ),
+    'perspective' => const CreativeChallenge(
+        title: 'Chase the Vanishing Point',
+        instructions:
+            'Pick a row of things that recede into the distance — a fence, a hallway, a row of windows. '
+            'Sketch it letting every line converge toward a single point on the horizon.',
+        difficulty: 3,
+        challengeType: 'architecture',
+        inspiredByConcept: 'Perspective',
+      ),
+    _ => mockDailyChallenge,
+  };
+}
+
+List<LibraryEntry> buildSeedLibrary() => [
+      LibraryEntry(
+        id: 'seed-1',
+        challengeTitle: 'Find a Symmetrical Object',
+        origin: 'Learn',
+        conceptTitle: 'Symmetry',
+        photoTint: const Color(0xFFDCEBF5),
+        photoGlyph: IconGlyph.symmetry,
+        date: DateTime.now().subtract(const Duration(days: 2)),
+      ),
+      LibraryEntry(
+        id: 'seed-2',
+        challengeTitle: 'Sketch a Stranger\'s Shoes',
+        origin: 'Create',
+        photoTint: const Color(0xFFFBEFD2),
+        photoGlyph: IconGlyph.spark,
+        date: DateTime.now().subtract(const Duration(days: 5)),
+      ),
+      LibraryEntry(
+        id: 'seed-3',
+        challengeTitle: 'Chase the Vanishing Point',
+        origin: 'Learn',
+        conceptTitle: 'Perspective',
+        photoTint: const Color(0xFFFBDCE9),
+        photoGlyph: IconGlyph.perspective,
+        date: DateTime.now().subtract(const Duration(days: 8)),
+      ),
+    ];
