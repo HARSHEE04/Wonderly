@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 /// Matches the `demo-user` seeded by the backend's `npm run seed` script
@@ -32,11 +33,21 @@ class ApiClient {
   static final ApiClient _instance = ApiClient._();
   factory ApiClient() => _instance;
 
-  /// Backend always runs on port 4000 (see `.env`), on the same host that's
-  /// serving this Flutter web build — so this works whether that host is
-  /// `localhost` or a LAN IP, without hardcoding either.
+  /// An explicit override, e.g. `--dart-define=API_BASE_URL=https://foo.trycloudflare.com`
+  /// — needed when the app and backend are served from different origins,
+  /// such as two separate tunnels, where the app can't infer the backend's
+  /// address from its own URL.
+  static const String _override = String.fromEnvironment('API_BASE_URL');
+
+  /// Backend always runs on port 4000 (see `.env`) unless [_override] is set.
+  /// On web, it's normally served from the same host as this build
+  /// (`localhost` or a LAN IP), read off the page's own URL. On a native
+  /// build (iOS Simulator, physical device), there's no page URL to read —
+  /// the iOS Simulator shares the Mac's network stack, so `localhost`
+  /// reaches a backend running on the host machine directly.
   static String get baseUrl {
-    final host = Uri.base.host.isNotEmpty ? Uri.base.host : 'localhost';
+    if (_override.isNotEmpty) return _override;
+    final host = kIsWeb ? (Uri.base.host.isNotEmpty ? Uri.base.host : 'localhost') : 'localhost';
     return 'http://$host:4000';
   }
 

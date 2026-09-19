@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_theme.dart';
 import '../widgets/app_transitions.dart';
 import '../widgets/atelier_button.dart';
 import '../widgets/circle_icon_button.dart';
 import '../widgets/line_icon.dart';
-import '../widgets/logomark.dart';
+import '../widgets/paper_texture.dart';
 import '../data/models.dart';
 import 'create_challenge_screen.dart';
 import 'learn_mode_screen.dart';
@@ -16,23 +17,21 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.ink,
+      backgroundColor: AppColors.paper,
       body: Stack(
         children: [
-          Positioned(
-            top: -30,
-            left: -40,
-            child: Opacity(
-              opacity: 0.14,
-              child: LineIcon(glyph: IconGlyph.plant, size: 220, color: AppColors.paperLight, strokeWidth: 1.2),
-            ),
-          ),
+          const Positioned.fill(child: PaperTexture()),
           Positioned(
             bottom: 120,
             right: -30,
             child: Opacity(
               opacity: 0.12,
-              child: LineIcon(glyph: IconGlyph.circle, size: 160, color: AppColors.paperLight, strokeWidth: 1.2),
+              child: LineIcon(
+                glyph: IconGlyph.circle,
+                size: 160,
+                color: AppColors.ink,
+                strokeWidth: 1.2,
+              ),
             ),
           ),
           SafeArea(
@@ -46,34 +45,47 @@ class HomeScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const SizedBox(width: 38),
-                      Column(
-                        children: [
-                          const Logomark(),
-                          const SizedBox(height: 8),
-                          Text(
-                            'sift',
-                            style: monoLabel(fontSize: 11, color: AppColors.paperLight, letterSpacing: 3),
-                          ),
-                        ],
+                      Text(
+                        'wonderly',
+                        style: monoLabel(
+                          fontSize: 11,
+                          color: AppColors.ink,
+                          letterSpacing: 3,
+                        ),
                       ),
                       CircleIconButton(
                         icon: Icons.grid_view_rounded,
-                        onTap: () => Navigator.of(context).push(risePageRoute(const LibraryScreen())),
+                        onTap: () =>
+                            Navigator.of(context)
+                                .push(risePageRoute(const LibraryScreen())),
                         filled: false,
                       ),
                     ],
                   ),
                   const Spacer(flex: 3),
                   Center(
-                    child: Text.rich(
-                      TextSpan(
-                        style: sketchDisplay(fontSize: 30, color: AppColors.paperLight),
-                        children: const [
-                          TextSpan(text: 'everything around\nyou is '),
-                          TextSpan(text: 'material', style: TextStyle(color: AppColors.yellow)),
-                        ],
-                      ),
-                      textAlign: TextAlign.center,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'What can you learn from\nwhat\'s around you?',
+                          textAlign: TextAlign.center,
+                          style: sketchDisplay(
+                            fontSize: 27,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Point your camera. Discover. Experiment. Create.',
+                          textAlign: TextAlign.center,
+                          style: sketchBody(
+                            fontSize: 14,
+                            weight: FontWeight.w600,
+                            color: AppColors.inkSoft,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const Spacer(flex: 4),
@@ -81,15 +93,19 @@ class HomeScreen extends StatelessWidget {
                     label: 'create',
                     fill: AppColors.yellow,
                     textColor: AppColors.ink,
-                    onTap: () => Navigator.of(context).push(risePageRoute(const CreateChallengeScreen())),
+                    onTap: () =>
+                        Navigator.of(context)
+                            .push(risePageRoute(const CreateChallengeScreen())),
                   ),
                   const SizedBox(height: 12),
                   AtelierButton(
                     label: 'learn',
                     outlined: true,
-                    outlineColor: AppColors.paperLight,
-                    outlineTextColor: AppColors.paperLight,
-                    onTap: () => Navigator.of(context).push(risePageRoute(const LearnModeScreen())),
+                    outlineColor: AppColors.ink,
+                    outlineTextColor: AppColors.ink,
+                    onTap: () =>
+                        Navigator.of(context)
+                            .push(risePageRoute(const LearnModeScreen())),
                   ),
                   const SizedBox(height: 28),
                 ],
