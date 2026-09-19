@@ -4,6 +4,14 @@ import 'package:google_fonts/google_fonts.dart';
 /// Core brand palette. Navy is the "ordinary world" canvas; yellow, pink and
 /// the rainbow gradient are reserved for discovery / creation moments so
 /// they read as intentional highlights rather than decoration.
+///
+/// The five accent hues (yellow, coral, pink, pinkDeep, sky) are drawn from
+/// the MyMindsEye.art reference palette — soft yellow, marigold, teal, dusty
+/// coral, and brick red — sampled directly from the swatch. `violet` extends
+/// that palette with a deeper teal so the existing light/deep accent pairing
+/// (pink/pinkDeep) has a cool-toned counterpart (sky/violet). `forestGreen`
+/// stays a literal green: it's used to render an actual "Forest Green"
+/// scanned-scene color, not UI chrome, so it sits outside this palette.
 class AppColors {
   AppColors._();
 
@@ -18,18 +26,25 @@ class AppColors {
   static const paperLight = Color(0xFFFFFCF3);
   static const paperTile = Color(0xFFF1ECDF);
 
-  static const yellow = Color(0xFFFFCB3D);
-  static const pink = Color(0xFFFF5FA0);
-  static const pinkDeep = Color(0xFFE8397E);
+  static const yellow = Color(0xFFFBE87D); // soft yellow
+  static const pink = Color(0xFFEA8886); // dusty coral pink
+  static const pinkDeep = Color(0xFFE0615E); // brick red
   static const forestGreen = Color(0xFF2F7D5A);
-  static const sky = Color(0xFF4FC3E8);
-  static const violet = Color(0xFF8B6BF2);
-  static const coral = Color(0xFFFF7A59);
+  static const sky = Color(0xFF7EC6CA); // teal
+  static const violet = Color(0xFF4E8E91); // deep teal
+  static const coral = Color(0xFFEFB546); // marigold
 
   static const ink = Color(0xFF14163A);
   static const inkSoft = Color(0xFF4A4C6A);
 
   static const rainbow = [yellow, coral, pink, violet, sky, forestGreen];
+
+  // Pale tints of the accent palette, for large soft-fill surfaces (library
+  // card thumbnails, capture preview backdrops) where a full-strength accent
+  // would be too loud.
+  static const tealTint = Color(0xFFDCEEEE);
+  static const marigoldTint = Color(0xFFFBEAC9);
+  static const brickTint = Color(0xFFF8DEDD);
 }
 
 class AppGradients {

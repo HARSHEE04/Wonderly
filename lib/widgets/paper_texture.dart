@@ -1,31 +1,50 @@
 import 'package:flutter/material.dart';
 
-/// Faint diagonal fiber lines suggesting paper grain, painted behind content
-/// on the sketchbook-styled screens.
+/// Faint graph-paper grid painted behind content — the fine-ruled background
+/// from the reference mockups, used on every screen in the app. [color]
+/// defaults to a warm ink line for the paper/cream screens; pass a light
+/// color (e.g. [Color.paperLight]) on dark ink/navy screens instead.
 class PaperTexture extends StatelessWidget {
-  const PaperTexture({super.key});
+  final Color color;
+  final double opacity;
+
+  const PaperTexture({
+    super.key,
+    this.color = const Color(0xFF7A6A3C),
+    this.opacity = 0.055,
+  });
 
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      child: CustomPaint(painter: _FiberPainter(), size: Size.infinite),
+      child: CustomPaint(
+        painter: _GridPainter(color.withValues(alpha: opacity)),
+        size: Size.infinite,
+      ),
     );
   }
 }
 
-class _FiberPainter extends CustomPainter {
+class _GridPainter extends CustomPainter {
+  final Color color;
+  _GridPainter(this.color);
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF7A6A3C).withValues(alpha: 0.045)
+      ..color = color
       ..strokeWidth = 1;
-    const gap = 6.0;
-    final diagonal = size.width + size.height;
-    for (double x = -size.height; x < diagonal; x += gap) {
-      canvas.drawLine(Offset(x, 0), Offset(x + size.height, size.height), paint);
+    const gap = 18.0;
+
+    for (double x = 0; x <= size.width; x += gap) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (double y = 0; y <= size.height; y += gap) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _FiberPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _GridPainter oldDelegate) =>
+      oldDelegate.color != color;
 }

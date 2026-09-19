@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import '../data/mock_data.dart';
 import '../data/models.dart';
+import '../theme/app_theme.dart';
 
 /// In-memory mock store for saved Library entries. Local saves are instant
 /// (see [add]); [mergeRemote] additionally folds in artworks the backend
@@ -38,7 +38,7 @@ class LibraryStore {
           challengeTitle: metadata['title']?.toString() ?? artwork['title']?.toString() ?? 'Untitled challenge',
           origin: origin,
           conceptTitle: metadata['conceptTitle']?.toString(),
-          photoTint: isLearn ? const Color(0xFFDCEBF5) : const Color(0xFFFBEFD2),
+          photoTint: isLearn ? AppColors.tealTint : AppColors.marigoldTint,
           photoGlyph: isLearn ? IconGlyph.symmetry : IconGlyph.spark,
           date: DateTime.tryParse(artwork['createdAt']?.toString() ?? '') ?? DateTime.now(),
         ),
