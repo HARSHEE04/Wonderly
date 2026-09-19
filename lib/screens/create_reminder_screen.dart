@@ -12,11 +12,13 @@ class CreateReminderScreen extends StatelessWidget {
   final CreativeChallenge challenge;
   final String origin;
   final String? conceptTitle;
+  final String? sessionId;
   const CreateReminderScreen({
     super.key,
     required this.challenge,
     this.origin = 'Create',
     this.conceptTitle,
+    this.sessionId,
   });
 
   @override
@@ -58,6 +60,7 @@ class CreateReminderScreen extends StatelessWidget {
                       challenge: challenge,
                       origin: origin,
                       conceptTitle: conceptTitle,
+                      sessionId: sessionId,
                     ))),
                   ),
                   const SizedBox(height: 28),

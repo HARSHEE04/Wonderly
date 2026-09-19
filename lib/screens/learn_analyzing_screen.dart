@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_transitions.dart';
 import '../widgets/line_icon.dart';
+import '../data/mock_data.dart';
 import '../data/models.dart';
+import '../services/api_client.dart';
 import 'learn_found_screen.dart';
 
 class LearnAnalyzingScreen extends StatefulWidget {
@@ -18,18 +20,38 @@ class _LearnAnalyzingScreenState extends State<LearnAnalyzingScreen> with Single
   final List<String> _steps = const ['reading colors', 'tracing shapes', 'noticing patterns', 'finding concepts'];
   int _step = 0;
   Timer? _timer;
+  late final Future<LearnSessionResult?> _sessionFuture;
 
   @override
   void initState() {
     super.initState();
+    _sessionFuture = _startBackendSession();
     _timer = Timer.periodic(const Duration(milliseconds: 500), (t) {
       if (!mounted) return;
       setState(() => _step = (_step + 1) % _steps.length);
     });
-    Future.delayed(const Duration(milliseconds: 2200), () {
+    Future.delayed(const Duration(milliseconds: 2200), () async {
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(risePageRoute(const LearnFoundScreen()));
+      final result = await _sessionFuture;
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(risePageRoute(LearnFoundScreen(sessionResult: result)));
     });
+  }
+
+  /// Creates a real backend session and posts the (still mocked) scene
+  /// analysis to get a real `ChallengeDecision` back. Falls back to null on
+  /// any failure (backend offline) so the Learn flow still works locally.
+  Future<LearnSessionResult?> _startBackendSession() async {
+    try {
+      final sessionId = await ApiClient().createSession(userId: demoUserId, mode: 'learning');
+      final decision = await ApiClient().postSceneAnalysis(
+        sessionId: sessionId,
+        scene: mockSceneAnalysis.toApiJson(),
+      );
+      return LearnSessionResult(sessionId: sessionId, decision: decision);
+    } catch (_) {
+      return null;
+    }
   }
 
   @override

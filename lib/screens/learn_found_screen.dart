@@ -7,10 +7,12 @@ import '../widgets/atelier_tile.dart';
 import '../widgets/circle_icon_button.dart';
 import '../widgets/line_icon.dart';
 import '../widgets/paper_texture.dart';
+import '../services/api_client.dart';
 import 'learn_concept_screen.dart';
 
 class LearnFoundScreen extends StatelessWidget {
-  const LearnFoundScreen({super.key});
+  final LearnSessionResult? sessionResult;
+  const LearnFoundScreen({super.key, this.sessionResult});
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +65,9 @@ class LearnFoundScreen extends StatelessWidget {
                         for (final concept in scene.concepts) ...[
                           _ConceptRow(
                             concept: concept,
-                            onTap: () => Navigator.of(context).push(risePageRoute(LearnConceptScreen(concept: concept))),
+                            onTap: () => Navigator.of(context).push(
+                              risePageRoute(LearnConceptScreen(concept: concept, sessionResult: sessionResult)),
+                            ),
                           ),
                           const SizedBox(height: 10),
                         ],

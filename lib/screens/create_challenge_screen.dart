@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../data/mock_data.dart';
+import '../data/models.dart';
+import '../services/api_client.dart';
 import '../widgets/app_transitions.dart';
 import '../widgets/atelier_button.dart';
 import '../widgets/challenge_tags.dart';
@@ -10,6 +12,28 @@ import 'create_reminder_screen.dart';
 
 class CreateChallengeScreen extends StatelessWidget {
   const CreateChallengeScreen({super.key});
+
+  /// Starts a real 'creative' session and asks the backend to recommend a
+  /// challenge for the (still mocked) scene, merging its verdict into the
+  /// locally-authored copy. Falls back to the plain mock challenge, with no
+  /// session id, if the backend is unreachable.
+  Future<void> _startChallenge(BuildContext context, CreativeChallenge challenge) async {
+    String? sessionId;
+    CreativeChallenge finalChallenge = challenge;
+    try {
+      final id = await ApiClient().createSession(userId: demoUserId, mode: 'creative');
+      final decision = await ApiClient().recommendChallenge(
+        scene: mockSceneAnalysis.toApiJson(),
+        userId: demoUserId,
+      );
+      sessionId = id;
+      finalChallenge = challenge.mergeDecision(decision);
+    } catch (_) {
+      // backend unavailable — proceed with the local mock challenge
+    }
+    if (!context.mounted) return;
+    Navigator.of(context).push(risePageRoute(CreateReminderScreen(challenge: finalChallenge, sessionId: sessionId)));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +68,7 @@ class CreateChallengeScreen extends StatelessWidget {
                   AtelierButton(
                     label: 'start challenge',
                     fill: AppColors.ink,
-                    onTap: () => Navigator.of(context).push(risePageRoute(CreateReminderScreen(challenge: challenge))),
+                    onTap: () => _startChallenge(context, challenge),
                   ),
                   const SizedBox(height: 28),
                 ],

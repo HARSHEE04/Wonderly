@@ -90,6 +90,36 @@ class SceneAnalysis {
   List<Supply> get allSwatches => [...colors, ...shapes, ...lines, ...textures, ...patterns, ...objects];
 }
 
+/// Converts this mocked scene into the JSON shape the backend's
+/// `sceneAnalysisSchema` (`src/api/validation/schemas.ts`) expects, so it can
+/// be posted to `/api/sessions/:sessionId/scene-analysis` or
+/// `/api/challenges/recommend` until a real CV pipeline replaces the mock.
+extension SceneAnalysisApi on SceneAnalysis {
+  Map<String, dynamic> toApiJson() {
+    List<Map<String, dynamic>> features(List<Supply> supplies, String prefix, {String? orientation}) => [
+          for (var i = 0; i < supplies.length; i++)
+            {
+              'id': '$prefix-$i',
+              'label': supplies[i].label,
+              if (prefix == 'color') 'name': supplies[i].label,
+              if (prefix == 'color') 'hex': _hex(supplies[i].color),
+              if (orientation != null) 'orientation': orientation,
+            },
+        ];
+
+    return {
+      'colors': features(colors, 'color'),
+      'shapes': features(shapes, 'shape'),
+      'textures': features(textures, 'texture'),
+      'lines': features(lines, 'line', orientation: 'vertical'),
+      'patterns': features(patterns, 'pattern'),
+      'semanticObjects': features(objects, 'object'),
+    };
+  }
+
+  String _hex(Color c) => '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
+}
+
 /// Placeholder for the teammate-owned challenge-generation logic.
 /// `challengeType` mirrors the backend's fixed `ChallengeType` union
 /// (character | poster | architecture | abstract | pattern | composition)
@@ -102,6 +132,8 @@ class CreativeChallenge {
   final int difficulty;
   final String challengeType;
   final String? inspiredByConcept;
+  final String? templateId;
+  final List<String>? reasonCodes;
 
   const CreativeChallenge({
     required this.title,
@@ -109,7 +141,26 @@ class CreativeChallenge {
     required this.difficulty,
     required this.challengeType,
     this.inspiredByConcept,
+    this.templateId,
+    this.reasonCodes,
   });
+
+  /// Folds in a backend `ChallengeDecision` (`src/core/types/visual.ts`),
+  /// keeping this wireframe's authored title/instructions since the backend
+  /// has no Gemini-generated copy yet. Returns `this` unchanged if [decision]
+  /// is null (backend unavailable, or the scene had insufficient features).
+  CreativeChallenge mergeDecision(Map<String, dynamic>? decision) {
+    if (decision == null) return this;
+    return CreativeChallenge(
+      title: title,
+      instructions: instructions,
+      difficulty: (decision['difficulty'] as num?)?.toInt() ?? difficulty,
+      challengeType: decision['challengeType'] as String? ?? challengeType,
+      inspiredByConcept: inspiredByConcept,
+      templateId: decision['challengeTemplateId'] as String?,
+      reasonCodes: (decision['reasonCodes'] as List?)?.cast<String>(),
+    );
+  }
 }
 
 /// One saved piece in the user's Library — a photographed physical artwork.
@@ -124,6 +175,10 @@ class LibraryEntry {
   final Color photoTint;
   final IconGlyph photoGlyph;
   final DateTime date;
+  /// Backend `Artwork.id` (`src/database/repository.ts`) when this entry was
+  /// synced from `GET /api/users/:userId/artworks`; null for local-only or
+  /// seed entries. Used to dedupe repeated syncs.
+  final String? remoteId;
 
   const LibraryEntry({
     required this.id,
@@ -133,5 +188,6 @@ class LibraryEntry {
     required this.photoTint,
     required this.photoGlyph,
     required this.date,
+    this.remoteId,
   });
 }

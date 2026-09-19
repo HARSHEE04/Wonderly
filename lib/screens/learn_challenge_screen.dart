@@ -7,15 +7,17 @@ import '../widgets/atelier_button.dart';
 import '../widgets/challenge_tags.dart';
 import '../widgets/circle_icon_button.dart';
 import '../widgets/paper_texture.dart';
+import '../services/api_client.dart';
 import 'create_reminder_screen.dart';
 
 class LearnChallengeScreen extends StatelessWidget {
   final ArtConcept concept;
-  const LearnChallengeScreen({super.key, required this.concept});
+  final LearnSessionResult? sessionResult;
+  const LearnChallengeScreen({super.key, required this.concept, this.sessionResult});
 
   @override
   Widget build(BuildContext context) {
-    final challenge = challengeForConcept(concept);
+    final challenge = challengeForConcept(concept).mergeDecision(sessionResult?.decision);
     return Scaffold(
       backgroundColor: AppColors.paper,
       body: Stack(
@@ -45,6 +47,7 @@ class LearnChallengeScreen extends StatelessWidget {
                       challenge: challenge,
                       origin: 'Learn',
                       conceptTitle: concept.title,
+                      sessionId: sessionResult?.sessionId,
                     ))),
                   ),
                   const SizedBox(height: 28),

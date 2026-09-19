@@ -7,11 +7,13 @@ import '../widgets/atelier_button.dart';
 import '../widgets/circle_icon_button.dart';
 import '../widgets/line_icon.dart';
 import '../widgets/paper_texture.dart';
+import '../services/api_client.dart';
 import 'learn_challenge_screen.dart';
 
 class LearnConceptScreen extends StatelessWidget {
   final ArtConcept concept;
-  const LearnConceptScreen({super.key, required this.concept});
+  final LearnSessionResult? sessionResult;
+  const LearnConceptScreen({super.key, required this.concept, this.sessionResult});
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +94,9 @@ class LearnConceptScreen extends StatelessWidget {
                   AtelierButton(
                     label: 'try it',
                     fill: AppColors.ink,
-                    onTap: () => Navigator.of(context).push(risePageRoute(LearnChallengeScreen(concept: concept))),
+                    onTap: () => Navigator.of(context).push(
+                      risePageRoute(LearnChallengeScreen(concept: concept, sessionResult: sessionResult)),
+                    ),
                   ),
                   const SizedBox(height: 24),
                 ],

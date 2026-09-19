@@ -1,13 +1,39 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../data/models.dart';
+import '../services/api_client.dart';
 import '../state/library_store.dart';
 import '../widgets/circle_icon_button.dart';
 import '../widgets/line_icon.dart';
 import '../widgets/paper_texture.dart';
 
-class LibraryScreen extends StatelessWidget {
+class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
+
+  @override
+  State<LibraryScreen> createState() => _LibraryScreenState();
+}
+
+class _LibraryScreenState extends State<LibraryScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _syncFromBackend();
+  }
+
+  /// Pulls artworks actually saved server-side (`GET
+  /// /api/users/:userId/artworks`) into the local store. Silently does
+  /// nothing if the backend is unreachable — the local/seed entries still
+  /// render either way.
+  Future<void> _syncFromBackend() async {
+    try {
+      final artworks = await ApiClient().getArtworks(demoUserId);
+      if (!mounted) return;
+      setState(() => LibraryStore.instance.mergeRemote(artworks));
+    } catch (_) {
+      // offline — local entries are still shown
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

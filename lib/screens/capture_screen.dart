@@ -14,8 +14,15 @@ class CaptureScreen extends StatelessWidget {
   final CreativeChallenge challenge;
   final String origin;
   final String? conceptTitle;
+  final String? sessionId;
 
-  const CaptureScreen({super.key, required this.challenge, required this.origin, this.conceptTitle});
+  const CaptureScreen({
+    super.key,
+    required this.challenge,
+    required this.origin,
+    this.conceptTitle,
+    this.sessionId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +75,7 @@ class CaptureScreen extends StatelessWidget {
                   challenge: challenge,
                   origin: origin,
                   conceptTitle: conceptTitle,
+                  sessionId: sessionId,
                 ))),
                 child: Container(
                   width: 68,

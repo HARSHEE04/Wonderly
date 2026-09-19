@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../data/models.dart';
+import '../services/api_client.dart';
 import '../state/library_store.dart';
 import '../widgets/app_transitions.dart';
 import '../widgets/atelier_button.dart';
@@ -12,8 +14,15 @@ class CapturePreviewScreen extends StatelessWidget {
   final CreativeChallenge challenge;
   final String origin;
   final String? conceptTitle;
+  final String? sessionId;
 
-  const CapturePreviewScreen({super.key, required this.challenge, required this.origin, this.conceptTitle});
+  const CapturePreviewScreen({
+    super.key,
+    required this.challenge,
+    required this.origin,
+    this.conceptTitle,
+    this.sessionId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +82,23 @@ class CapturePreviewScreen extends StatelessWidget {
                           photoGlyph: glyph,
                           date: DateTime.now(),
                         ));
+                        // Fire-and-forget: this is a real session, so mark it
+                        // complete and persist the artwork server-side. Never
+                        // blocks the local save — the wireframe must keep
+                        // working with the backend offline.
+                        final id = sessionId;
+                        if (id != null) {
+                          unawaited(ApiClient().completeSession(
+                            sessionId: id,
+                            userId: demoUserId,
+                            challengeType: challenge.challengeType,
+                            metadata: {
+                              'title': challenge.title,
+                              'origin': origin,
+                              if (conceptTitle != null) 'conceptTitle': conceptTitle,
+                            },
+                          ).catchError((_) {}));
+                        }
                         Navigator.of(context).pushReplacement(risePageRoute(const SavedScreen()));
                       },
                     ),
