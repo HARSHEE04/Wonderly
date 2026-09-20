@@ -52,6 +52,8 @@ const ChallengeTemplateSchema = new Schema(
 
 const ChallengeInstanceSchema = new Schema(
   {
+    generationSource: { type: String, enum: ['openai', 'fallback'] },
+    reasonCodes: [{ type: String }],
     userId: { type: String, required: true },
     sessionId: { type: String, required: true, unique: true },
     templateId: { type: String, required: true },

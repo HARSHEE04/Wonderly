@@ -19,6 +19,8 @@ import {
 } from './services/sessionService.js';
 import { learningResourceService } from './services/learningResourceService.js';
 import { validateSceneAnalysis } from './product/engine.js';
+import { getOrGenerateCreativeChallenge } from './services/creativeChallengeService.js';
+import { getChallengeInstancesForUserRecord } from './database/repository.js';
 
 const app = express();
 app.use(cors({ origin: env.corsOrigin }));
@@ -81,6 +83,25 @@ app.post('/api/sessions/:sessionId/challenge-instance', async (req, res) => {
     const input = challengeInstanceCreateSchema.parse(req.body);
     const instance = await createChallengeInstance(req.params.sessionId, input.title, input.instructions);
     res.status(201).json({ success: true, data: instance });
+  } catch (error) {
+    const normalized = normalizeError(error);
+    res.status(normalized.statusCode).json({ success: false, error: normalized });
+  }
+});
+
+app.post('/api/sessions/:sessionId/creative-challenge', async (req, res) => {
+  try {
+    const instance = await getOrGenerateCreativeChallenge(req.params.sessionId);
+    res.json({ success: true, data: instance });
+  } catch (error) {
+    const normalized = normalizeError(error);
+    res.status(normalized.statusCode).json({ success: false, error: normalized });
+  }
+});
+
+app.get('/api/users/:userId/challenge-instances', async (req, res) => {
+  try {
+    res.json({ success: true, data: await getChallengeInstancesForUserRecord(req.params.userId) });
   } catch (error) {
     const normalized = normalizeError(error);
     res.status(normalized.statusCode).json({ success: false, error: normalized });

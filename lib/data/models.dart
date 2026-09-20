@@ -120,13 +120,10 @@ extension SceneAnalysisApi on SceneAnalysis {
   String _hex(Color c) => '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
 }
 
-/// Placeholder for the teammate-owned challenge-generation logic.
-/// `challengeType` mirrors the backend's fixed `ChallengeType` union
-/// (character | poster | architecture | abstract | pattern | composition)
-/// and `difficulty` mirrors its numeric scale — the backend has no
-/// `title`/`instructions` yet (that's the future Gemini handoff), so those
-/// two fields are this wireframe's stand-in for that output.
+/// Artist-facing challenge returned by the backend, or authored Learn copy.
+/// Standalone Create reads the exact title/instructions from its saved instance.
 class CreativeChallenge {
+  final String? instanceId;
   final String title;
   final String instructions;
   final int difficulty;
@@ -136,6 +133,7 @@ class CreativeChallenge {
   final List<String>? reasonCodes;
 
   const CreativeChallenge({
+    this.instanceId,
     required this.title,
     required this.instructions,
     required this.difficulty,
@@ -144,6 +142,18 @@ class CreativeChallenge {
     this.templateId,
     this.reasonCodes,
   });
+
+  factory CreativeChallenge.fromInstance(Map<String, dynamic> json) {
+    return CreativeChallenge(
+      instanceId: json['id'] as String,
+      title: json['title'] as String,
+      instructions: json['instructions'] as String,
+      difficulty: (json['difficulty'] as num).toInt(),
+      challengeType: json['challengeType'] as String,
+      templateId: json['templateId'] as String,
+      reasonCodes: (json['reasonCodes'] as List?)?.cast<String>(),
+    );
+  }
 
   /// Folds in a backend `ChallengeDecision` (`src/core/types/visual.ts`),
   /// keeping this wireframe's authored title/instructions since the backend

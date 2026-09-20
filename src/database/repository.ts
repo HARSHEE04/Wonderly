@@ -97,6 +97,8 @@ function toSessionRecord(doc: any): CreativeSessionRecord {
 
 function toChallengeInstance(doc: any): ChallengeInstance {
   return {
+    generationSource: doc.generationSource ?? undefined,
+    reasonCodes: doc.reasonCodes ?? [],
     id: doc._id.toString(),
     userId: doc.userId,
     sessionId: doc.sessionId,
@@ -273,13 +275,32 @@ export async function getChallengeInstanceBySessionRecord(sessionId: string): Pr
   if (useMongo()) {
     try {
       const doc = await ChallengeInstanceModel.findOne({ sessionId });
-      return doc ? toChallengeInstance(doc) : undefined;
+      return doc ? toChallengeInstance(doc) : memoryChallengeInstances.get(sessionId);
     } catch (error) {
       console.warn('Mongo challenge instance lookup failed, checking in-memory store:', error);
     }
   }
 
   return memoryChallengeInstances.get(sessionId);
+}
+
+export async function getChallengeInstancesForUserRecord(userId: string): Promise<ChallengeInstance[]> {
+  const instances = new Map<string, ChallengeInstance>();
+  for (const instance of memoryChallengeInstances.values()) {
+    if (instance.userId === userId) instances.set(instance.sessionId, instance);
+  }
+  if (useMongo()) {
+    try {
+      const docs = await ChallengeInstanceModel.find({ userId }).sort({ createdAt: -1 }).lean();
+      for (const doc of docs) {
+        const instance = toChallengeInstance(doc);
+        instances.set(instance.sessionId, instance);
+      }
+    } catch {
+      console.warn('Mongo challenge history unavailable; returning in-memory history.');
+    }
+  }
+  return [...instances.values()].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export async function completeSessionRecord(sessionId: string): Promise<void> {

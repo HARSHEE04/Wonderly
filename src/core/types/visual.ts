@@ -126,6 +126,8 @@ export interface CreativeGenerationContext {
 }
 
 export interface ChallengeInstance {
+  generationSource?: 'openai' | 'fallback';
+  reasonCodes?: string[];
   id: string;
   userId: string;
   sessionId: string;

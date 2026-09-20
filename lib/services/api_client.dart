@@ -62,10 +62,10 @@ class ApiClient {
     return decoded;
   }
 
-  Future<Map<String, dynamic>> _post(String path, Map<String, dynamic> body) async {
+  Future<Map<String, dynamic>> _post(String path, Map<String, dynamic> body, {Duration timeout = const Duration(seconds: 8)}) async {
     final res = await http
         .post(_uri(path), headers: const {'Content-Type': 'application/json'}, body: jsonEncode(body))
-        .timeout(const Duration(seconds: 8));
+        .timeout(timeout);
     final decoded = _unwrap(res);
     return decoded['data'] as Map<String, dynamic>? ?? {};
   }
@@ -101,6 +101,15 @@ class ApiClient {
       'title': title,
       'instructions': instructions,
     });
+  }
+
+  Future<Map<String, dynamic>> generateCreativeChallenge(String sessionId) {
+    return _post('/api/sessions/$sessionId/creative-challenge', {}, timeout: const Duration(seconds: 30));
+  }
+
+  Future<List<Map<String, dynamic>>> getChallengeHistory(String userId) async {
+    final list = await _getList('/api/users/$userId/challenge-instances');
+    return list.cast<Map<String, dynamic>>();
   }
 
   Future<void> completeSession({
