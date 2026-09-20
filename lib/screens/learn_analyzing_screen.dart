@@ -73,7 +73,7 @@ class _LearnAnalyzingScreenState extends State<LearnAnalyzingScreen>
       );
       final decision = await ApiClient().postSceneAnalysis(
         sessionId: sessionId,
-        scene: mockSceneAnalysis.toApiJson(),
+        scene: currentSceneAnalysis.toApiJson(),
       );
       final learningContent = await ApiClient().generateLearningContent(
         sessionId,

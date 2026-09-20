@@ -59,7 +59,7 @@ class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
       if (!_sceneAttached) {
         final decision = await api.postSceneAnalysis(
           sessionId: _sessionId!,
-          scene: mockSceneAnalysis.toApiJson(),
+          scene: currentSceneAnalysis.toApiJson(),
         );
         if (decision == null)
           throw ApiException('No challenge available for this scene');

@@ -1,8 +1,10 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 import '../data/mock_data.dart';
 import '../data/models.dart';
+import '../services/api_client.dart';
 import '../widgets/app_transitions.dart';
 import '../widgets/circle_icon_button.dart';
 import '../widgets/line_icon.dart';
@@ -24,12 +26,19 @@ class LearnScanScreen extends StatefulWidget {
   State<LearnScanScreen> createState() => _LearnScanScreenState();
 }
 
-class _LearnScanScreenState extends State<LearnScanScreen> {
+class _LearnScanScreenState extends State<LearnScanScreen>
+    with WidgetsBindingObserver {
   bool _revealed = false;
+  bool _capturing = false;
+  CameraController? _controller;
+  Future<void>? _initializeCamera;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initializeCamera = _setUpCamera();
+
     if (widget.mode == ScanMode.continuous) {
       Future.delayed(const Duration(milliseconds: 1800), () {
         if (mounted) setState(() => _revealed = true);
@@ -38,16 +47,83 @@ class _LearnScanScreenState extends State<LearnScanScreen> {
     }
   }
 
-  void _goToAnalyzing() {
+  Future<void> _setUpCamera() async {
+    try {
+      final cameras = await availableCameras();
+      if (cameras.isEmpty) return;
+      final back = cameras.firstWhere(
+        (c) => c.lensDirection == CameraLensDirection.back,
+        orElse: () => cameras.first,
+      );
+      final controller = CameraController(
+        back,
+        ResolutionPreset.high,
+        enableAudio: false,
+      );
+      await controller.initialize();
+      if (!mounted) {
+        await controller.dispose();
+        return;
+      }
+      setState(() => _controller = controller);
+    } catch (_) {
+      // No camera available (e.g. denied permission) — falls back to the
+      // plain viewfinder panel below.
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+    if (state == AppLifecycleState.inactive) {
+      controller.dispose();
+      _controller = null;
+    } else if (state == AppLifecycleState.resumed) {
+      _initializeCamera = _setUpCamera();
+    }
+  }
+
+  Future<void> _goToAnalyzing() async {
+    if (_capturing) return;
+    _capturing = true;
+    await _captureAndAnalyze();
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       risePageRoute(LearnAnalyzingScreen(origin: widget.origin)),
     );
   }
 
+  /// Takes a photo with the live camera and sends it to the backend's
+  /// OpenCV pipeline, replacing [currentSceneAnalysis] with the real
+  /// result. Silently keeps the previous scene on any failure (camera
+  /// unavailable, backend offline) so the flow still works end to end.
+  Future<void> _captureAndAnalyze() async {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+    try {
+      final photo = await controller.takePicture();
+      final bytes = await photo.readAsBytes();
+      final json = await ApiClient().analyzeScan(bytes);
+      currentSceneAnalysis = SceneAnalysis.fromCvJson(
+        json,
+        concepts: currentSceneAnalysis.concepts,
+      );
+    } catch (_) {
+      // Keep the previous currentSceneAnalysis.
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _controller?.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final markers = mockSceneAnalysis.allSwatches.take(4).toList();
+    final markers = currentSceneAnalysis.allSwatches.take(4).toList();
     return Scaffold(
       backgroundColor: AppColors.paper,
       body: Stack(
@@ -93,6 +169,7 @@ class _LearnScanScreenState extends State<LearnScanScreen> {
                           clipBehavior: Clip.antiAlias,
                           child: Stack(
                             children: [
+                              Positioned.fill(child: _buildCameraLayer()),
                               Positioned(
                                 top: 30,
                                 right: 24,
@@ -203,6 +280,29 @@ class _LearnScanScreenState extends State<LearnScanScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCameraLayer() {
+    return FutureBuilder<void>(
+      future: _initializeCamera,
+      builder: (context, snapshot) {
+        final controller = _controller;
+        if (controller == null || !controller.value.isInitialized) {
+          return const SizedBox.shrink();
+        }
+        final previewSize = controller.value.previewSize!;
+        return ClipRect(
+          child: FittedBox(
+            fit: BoxFit.cover,
+            child: SizedBox(
+              width: previewSize.height,
+              height: previewSize.width,
+              child: CameraPreview(controller),
+            ),
+          ),
+        );
+      },
     );
   }
 }

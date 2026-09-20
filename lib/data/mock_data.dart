@@ -106,6 +106,12 @@ final SceneAnalysis mockSceneAnalysis = SceneAnalysis(
   ],
 );
 
+/// The scene actually shown across Learn/Create screens: starts as the mock
+/// above, and gets replaced with real OpenCV output (see
+/// `SceneAnalysis.fromCvJson`) once a scan screen successfully analyzes a
+/// captured photo.
+SceneAnalysis currentSceneAnalysis = mockSceneAnalysis;
+
 List<LibraryEntry> buildSeedLibrary() => [
   LibraryEntry(
     id: 'seed-1',

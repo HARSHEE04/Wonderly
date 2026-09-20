@@ -156,6 +156,76 @@ class SceneAnalysis {
     ...patterns,
     ...objects,
   ];
+
+  /// Builds a [SceneAnalysis] from the real OpenCV output
+  /// (`computer_vision/scene_analysis.py`, proxied through
+  /// `POST /api/scan/analyze`). `concepts` still comes from the
+  /// teammate-owned Gemini/CV pipeline this doesn't touch, so the caller
+  /// carries the previous scene's concepts forward.
+  factory SceneAnalysis.fromCvJson(
+    Map<String, dynamic> json, {
+    required List<ArtConcept> concepts,
+  }) {
+    List<Supply> supplies(
+      String key,
+      SwatchKind kind,
+      IconGlyph glyph,
+      Color fallbackColor,
+    ) {
+      final items = (json[key] as List?) ?? const [];
+      return [
+        for (final item in items.cast<Map<String, dynamic>>())
+          Supply(
+            label: (item['label'] ?? item['hex'] ?? '').toString(),
+            kind: kind,
+            color: item['hex'] != null
+                ? _colorFromHex(item['hex'] as String)
+                : fallbackColor,
+            glyph: glyph,
+          ),
+      ];
+    }
+
+    return SceneAnalysis(
+      colors: supplies(
+        'colors',
+        SwatchKind.color,
+        IconGlyph.circle,
+        Colors.grey,
+      ),
+      shapes: supplies(
+        'shapes',
+        SwatchKind.shape,
+        IconGlyph.circle,
+        Colors.grey,
+      ),
+      lines: supplies('lines', SwatchKind.line, IconGlyph.lines, Colors.grey),
+      textures: supplies(
+        'textures',
+        SwatchKind.texture,
+        IconGlyph.wave,
+        Colors.grey,
+      ),
+      patterns: supplies(
+        'patterns',
+        SwatchKind.pattern,
+        IconGlyph.stripes,
+        Colors.grey,
+      ),
+      objects: supplies(
+        'semanticObjects',
+        SwatchKind.object,
+        IconGlyph.camera,
+        Colors.grey,
+      ),
+      concepts: concepts,
+    );
+  }
+}
+
+Color _colorFromHex(String hex) {
+  final cleaned = hex.replaceFirst('#', '');
+  return Color(int.parse('FF$cleaned', radix: 16));
 }
 
 /// Converts this mocked scene into the JSON shape the backend's

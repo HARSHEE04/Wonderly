@@ -19,6 +19,7 @@ import {
 } from './services/sessionService.js';
 import { learningResourceService } from './services/learningResourceService.js';
 import { generateLearningContent } from './services/learningContentService.js';
+import { analyzeSceneImage } from './services/cvAnalysisService.js';
 import { validateSceneAnalysis } from './product/engine.js';
 import { getOrGenerateCreativeChallenge } from './services/creativeChallengeService.js';
 import { getChallengeInstancesForUserRecord } from './database/repository.js';
@@ -206,6 +207,19 @@ app.get('/api/learning/resources', async (req, res) => {
 
 app.get('/api/mock-scenes/:sceneName', (req, res) => {
   res.json({ success: true, data: getMockScene(req.params.sceneName) });
+});
+
+app.post('/api/scan/analyze', express.raw({ type: 'image/*', limit: '10mb' }), async (req, res) => {
+  try {
+    if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+      throw new ApiError('image body is required', 400);
+    }
+    const sceneAnalysis = await analyzeSceneImage(req.body);
+    res.json({ success: true, data: sceneAnalysis });
+  } catch (error) {
+    const normalized = normalizeError(error);
+    res.status(normalized.statusCode).json({ success: false, error: normalized });
+  }
 });
 
 app.post('/api/learning/content', async (req, res) => {

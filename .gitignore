@@ -55,3 +55,4 @@ computer_vision/photo_results/
 computer_vision/scan_results/
 computer_vision/scene_analysis_sample.json
 computer_vision/__pycache__/
+computer_vision/.venv/

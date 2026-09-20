@@ -17,7 +17,7 @@ class LearnFoundScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scene = mockSceneAnalysis;
+    final scene = currentSceneAnalysis;
     final learningContent = sessionResult?.learningContent;
     return Scaffold(
       backgroundColor: AppColors.paper,

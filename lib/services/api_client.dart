@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
@@ -94,6 +95,21 @@ class ApiClient {
     final res = await http.get(_uri(path)).timeout(const Duration(seconds: 8));
     final decoded = _unwrap(res);
     return decoded['data'] as List<dynamic>? ?? [];
+  }
+
+  /// Uploads a captured photo to the backend's OpenCV pipeline
+  /// (`computer_vision/scene_analysis.py`) and returns the raw SceneAnalysis
+  /// JSON (colors/shapes/textures/lines/patterns) it detected.
+  Future<Map<String, dynamic>> analyzeScan(Uint8List photoBytes) async {
+    final res = await http
+        .post(
+          _uri('/api/scan/analyze'),
+          headers: const {'Content-Type': 'image/jpeg'},
+          body: photoBytes,
+        )
+        .timeout(const Duration(seconds: 20));
+    final decoded = _unwrap(res);
+    return decoded['data'] as Map<String, dynamic>? ?? {};
   }
 
   Future<String> createSession({
