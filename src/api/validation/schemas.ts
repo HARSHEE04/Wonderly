@@ -63,6 +63,19 @@ export const completeSessionSchema = z.object({
   artworkMetadata: z.record(z.any()).optional()
 });
 
+export const challengeInstanceCreateSchema = z.object({
+  title: z.string().trim().min(1),
+  instructions: z.string().trim().min(1)
+});
+
+export const creativeChallengeRequestSchema = z.object({
+  learningContext: z.object({
+    focusConcept: z.string().trim().min(1),
+    learningInsight: z.string().trim().min(1),
+    learningEvidence: z.array(z.string().trim().min(1)).optional()
+  }).optional()
+});
+
 export const learningResourceQuerySchema = z.object({
   concept: z.string().min(1)
 });

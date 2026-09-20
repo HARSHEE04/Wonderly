@@ -2,6 +2,9 @@ import type {
   ChallengeDecision,
   ChallengeTemplate,
   ChallengeType,
+  CreativeGenerationContext,
+  CreativeLearningContext,
+  CreativeSourceMode,
   IngredientType,
   SceneAnalysis
 } from '../core/types/visual.js';
@@ -309,14 +312,24 @@ export function recommendChallenge(
   };
 }
 
-export function buildGeminiContext(sessionId: string, scene: SceneAnalysis, decision: ChallengeDecision) {
+export function buildCreativeGenerationContext(
+  sessionId: string,
+  scene: SceneAnalysis,
+  decision: ChallengeDecision,
+  options: {
+    sourceMode?: CreativeSourceMode;
+    learningContext?: CreativeLearningContext;
+  } = {}
+): CreativeGenerationContext {
   return {
     sessionId,
+    sourceMode: options.sourceMode ?? 'standalone',
     challengeDecision: decision,
     selectedSceneFeatures: scene,
-    personalization: decision.personalizationContext ?? {
-      underusedConcepts: [],
-      recentChallengeTypes: []
-    }
+    personalization: {
+      underusedConcepts: decision.personalizationContext?.underusedConcepts ?? [],
+      recentChallengeTypes: decision.personalizationContext?.recentChallengeTypes ?? []
+    },
+    ...(options.learningContext ? { learningContext: options.learningContext } : {})
   };
 }

@@ -64,7 +64,12 @@ class _LearnAnalyzingScreenState extends State<LearnAnalyzingScreen>
         sessionId: sessionId,
         scene: mockSceneAnalysis.toApiJson(),
       );
-      return LearnSessionResult(sessionId: sessionId, decision: decision);
+      final learningContent = await ApiClient().generateLearningContent(sessionId);
+      return LearnSessionResult(
+        sessionId: sessionId,
+        decision: decision,
+        learningContent: learningContent,
+      );
     } catch (_) {
       return null;
     }

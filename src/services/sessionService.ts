@@ -1,5 +1,5 @@
 import {
-  buildGeminiContext,
+  buildCreativeGenerationContext,
   buildPersonalizationContext,
   defaultChallengeTemplates,
   recommendChallenge,
@@ -11,7 +11,9 @@ import { ApiError } from '../core/errors.js';
 import { mockScenes } from '../data/mockScenes.js';
 import {
   createSessionRecord,
+  createChallengeInstanceRecord,
   getSessionRecord,
+  getChallengeInstanceBySessionRecord,
   updateSessionSceneRecord,
   updateSessionDecisionRecord,
   completeSessionRecord,
@@ -36,6 +38,37 @@ export async function getSession(sessionId: string) {
 
 export async function updateSessionScene(sessionId: string, scene: SceneAnalysis) {
   return updateSessionSceneRecord(sessionId, scene);
+}
+
+export async function createChallengeInstance(sessionId: string, title: string, instructions: string) {
+  const session = await getSessionRecord(sessionId);
+  if (!session) {
+    throw new ApiError('Session not found', 404);
+  }
+
+  const decision = session.challengeDecision;
+  if (!decision || !session.selectedChallengeTemplateId) {
+    throw new ApiError('A challenge decision must be selected before creating a challenge instance', 409);
+  }
+
+  const template = defaultChallengeTemplates.find((item) => item.id === decision.challengeTemplateId);
+  return createChallengeInstanceRecord({
+    userId: session.userId,
+    sessionId,
+    templateId: decision.challengeTemplateId,
+    challengeType: decision.challengeType,
+    difficulty: decision.difficulty,
+    sourceMode: session.mode === 'learning' ? 'learning' : 'standalone',
+    title,
+    instructions,
+    focusConcepts: template?.concepts ?? [],
+    usedSceneFeatures: decision.matchedIngredients,
+    whyThisFitsScene: decision.reasonCodes
+  });
+}
+
+export async function getChallengeInstance(sessionId: string) {
+  return getChallengeInstanceBySessionRecord(sessionId);
 }
 
 function buildConceptExposureFromCompletions(completions: ChallengeCompletionRecord[]) {
@@ -116,7 +149,7 @@ export async function recommendForScene(
     decision,
     eligibleChallenges: recommendation.eligibleChallenges,
     recommendation: decision,
-    context: buildGeminiContext(sessionId ?? 'session-id', scene, decision),
+    context: buildCreativeGenerationContext(sessionId ?? 'session-id', scene, decision),
     personalization: buildPersonalizationContext(history)
   };
 }
@@ -144,10 +177,12 @@ export async function completeSession(
   const template = defaultChallengeTemplates.find((item) => item.id === templateId);
   const type = challengeType ?? session.challengeDecision?.challengeType ?? 'unknown';
   const concepts = template?.concepts ?? [];
+  const challengeInstance = await getChallengeInstanceBySessionRecord(sessionId);
 
   const completion = await recordChallengeCompletion({
     userId,
     sessionId,
+    challengeInstanceId: challengeInstance?.id,
     templateId,
     challengeType: type,
     concepts
@@ -162,6 +197,7 @@ export async function completeSession(
     artwork = await createArtworkRecord({
       userId,
       sessionId,
+      challengeInstanceId: challengeInstance?.id,
       challengeTemplateId: templateId,
       title: metadata.title as string | undefined,
       assetUrl: metadata.assetUrl as string | undefined,
@@ -212,9 +248,11 @@ export async function addArtwork(
   sessionId: string,
   challengeTemplateId: string
 ) {
+  const challengeInstance = await getChallengeInstanceBySessionRecord(sessionId);
   return createArtworkRecord({
     userId,
     sessionId,
+    challengeInstanceId: challengeInstance?.id,
     challengeTemplateId,
     title: metadata.title as string | undefined,
     assetUrl: metadata.assetUrl as string | undefined,

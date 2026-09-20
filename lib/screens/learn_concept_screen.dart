@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
-import '../data/mock_data.dart';
 import '../data/models.dart';
 import '../widgets/app_transitions.dart';
 import '../widgets/atelier_button.dart';
@@ -13,17 +12,17 @@ import '../services/api_client.dart';
 import 'learn_challenge_screen.dart';
 
 class LearnConceptScreen extends StatelessWidget {
-  final ArtConcept concept;
+  final LearningElement element;
   final LearnSessionResult? sessionResult;
   const LearnConceptScreen({
     super.key,
-    required this.concept,
+    required this.element,
     this.sessionResult,
   });
 
   @override
   Widget build(BuildContext context) {
-    final resource = mockLearningResources[concept.id];
+    final accent = _accentFor(element.category);
     return Scaffold(
       backgroundColor: AppColors.paper,
       body: Stack(
@@ -41,9 +40,9 @@ class LearnConceptScreen extends StatelessWidget {
                     onTap: () => Navigator.of(context).pop(),
                   ),
                   const SizedBox(height: 20),
-                  Text('we found', style: monoLabel(color: concept.accent)),
+                  Text('we found', style: monoLabel(color: accent)),
                   const SizedBox(height: 6),
-                  Text(concept.title, style: editorialDisplay(fontSize: 32)),
+                  Text(element.name, style: editorialDisplay(fontSize: 32)),
                   const SizedBox(height: 18),
                   Center(
                     child: Container(
@@ -62,18 +61,18 @@ class LearnConceptScreen extends StatelessWidget {
                       ),
                       child: Center(
                         child: LineIcon(
-                          glyph: concept.glyph,
+                          glyph: _glyphFor(element.category),
                           size: 76,
-                          color: concept.accent,
+                          color: accent,
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Text(concept.blurb, style: sketchBody(fontSize: 16.5)),
+                  Text(element.description, style: sketchBody(fontSize: 16.5)),
                   const SizedBox(height: 20),
-                  if (resource != null) ...[
-                    Text('from around the web', style: monoLabel()),
+                  ...[
+                    Text('how artists use it', style: monoLabel()),
                     const SizedBox(height: 16),
                     Stack(
                       clipBehavior: Clip.none,
@@ -83,7 +82,7 @@ class LearnConceptScreen extends StatelessWidget {
                           right: 24,
                           child: WashiTape(
                             color:
-                                AppColors.tapePalette[concept.id.hashCode %
+                                AppColors.tapePalette[element.name.hashCode %
                                     AppColors.tapePalette.length],
                             angle: 0.16,
                             width: 16,
@@ -113,13 +112,13 @@ class LearnConceptScreen extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
-                                  resource.source.toLowerCase(),
+                                  element.category,
                                   style: monoLabel(fontSize: 11),
                                 ),
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                resource.title,
+                                element.artisticUse,
                                 style: sketchBody(
                                   fontSize: 16.5,
                                   weight: FontWeight.w700,
@@ -128,32 +127,11 @@ class LearnConceptScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                resource.summary,
+                                element.effect,
                                 style: sketchBody(fontSize: 14.5),
                               ),
                               const SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.north_east_rounded,
-                                    size: 13,
-                                    color: AppColors.ink.withValues(alpha: 0.5),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Expanded(
-                                    child: Text(
-                                      resource.url,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: monoLabel(
-                                        fontSize: 12,
-                                        color: AppColors.ink.withValues(
-                                          alpha: 0.5,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              Text(element.howToUse, style: monoLabel(fontSize: 12)),
                             ],
                           ),
                         ),
@@ -167,7 +145,7 @@ class LearnConceptScreen extends StatelessWidget {
                     onTap: () => Navigator.of(context).push(
                       risePageRoute(
                         LearnChallengeScreen(
-                          concept: concept,
+                          element: element,
                           sessionResult: sessionResult,
                         ),
                       ),
@@ -183,3 +161,19 @@ class LearnConceptScreen extends StatelessWidget {
     );
   }
 }
+
+IconGlyph _glyphFor(String category) => switch (category) {
+      'color' => IconGlyph.palette,
+      'line' => IconGlyph.lines,
+      'texture' => IconGlyph.wave,
+      'pattern' => IconGlyph.stripes,
+      _ => IconGlyph.circle,
+    };
+
+Color _accentFor(String category) => switch (category) {
+      'color' => AppColors.coral,
+      'line' => AppColors.sky,
+      'texture' => AppColors.forestGreen,
+      'pattern' => AppColors.pinkDeep,
+      _ => AppColors.violet,
+    };

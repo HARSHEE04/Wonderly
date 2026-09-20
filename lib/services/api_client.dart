@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
+import '../data/models.dart';
 
 /// Matches the `demo-user` seeded by the backend's `npm run seed` script
 /// (`src/data/seed.ts`). There's no auth in this wireframe, so every device
@@ -22,7 +23,12 @@ class ApiException implements Exception {
 class LearnSessionResult {
   final String sessionId;
   final Map<String, dynamic>? decision;
-  const LearnSessionResult({required this.sessionId, this.decision});
+  final LearningContent learningContent;
+  const LearnSessionResult({
+    required this.sessionId,
+    required this.learningContent,
+    this.decision,
+  });
 }
 
 /// Thin client for the Node/Express backend in this repo (`src/server.ts`).
@@ -69,15 +75,16 @@ class ApiClient {
 
   Future<Map<String, dynamic>> _post(
     String path,
-    Map<String, dynamic> body,
-  ) async {
+    Map<String, dynamic> body, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
     final res = await http
         .post(
           _uri(path),
           headers: const {'Content-Type': 'application/json'},
           body: jsonEncode(body),
         )
-        .timeout(const Duration(seconds: 8));
+        .timeout(timeout);
     final decoded = _unwrap(res);
     return decoded['data'] as Map<String, dynamic>? ?? {};
   }
@@ -105,6 +112,42 @@ class ApiClient {
     final data = await _post('/api/sessions/$sessionId/scene-analysis', scene);
     final recommendation = data['recommendation'] as Map<String, dynamic>?;
     return recommendation?['decision'] as Map<String, dynamic>?;
+  }
+
+  Future<Map<String, dynamic>> createChallengeInstance({
+    required String sessionId,
+    required String title,
+    required String instructions,
+  }) {
+    return _post('/api/sessions/$sessionId/challenge-instance', {
+      'title': title,
+      'instructions': instructions,
+    });
+  }
+
+  Future<Map<String, dynamic>> generateCreativeChallenge(
+    String sessionId, {
+    Map<String, dynamic>? learningContext,
+  }) {
+    return _post(
+      '/api/sessions/$sessionId/creative-challenge',
+      {if (learningContext != null) 'learningContext': learningContext},
+      timeout: const Duration(seconds: 30),
+    );
+  }
+
+  Future<LearningContent> generateLearningContent(String sessionId) async {
+    final data = await _post(
+      '/api/learning/content',
+      {'sessionId': sessionId},
+      timeout: const Duration(seconds: 30),
+    );
+    return LearningContent.fromJson(data);
+  }
+
+  Future<List<Map<String, dynamic>>> getChallengeHistory(String userId) async {
+    final list = await _getList('/api/users/$userId/challenge-instances');
+    return list.cast<Map<String, dynamic>>();
   }
 
   Future<Map<String, dynamic>?> recommendChallenge({
