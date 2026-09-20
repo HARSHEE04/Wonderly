@@ -225,7 +225,11 @@ app.post('/api/learning/content', async (req, res) => {
   }
 });
 
-app.use((error: unknown, _req: express.Request, res: express.Response) => {
+app.use((_req, res) => {
+  res.status(404).json({ success: false, error: { message: 'Not found', statusCode: 404 } });
+});
+
+app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   const normalized = normalizeError(error);
   res.status(normalized.statusCode).json({ success: false, error: normalized });
 });
