@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
-import '../data/mock_data.dart';
 import '../data/models.dart';
 import '../widgets/app_transitions.dart';
-import '../widgets/atelier_tile.dart';
 import '../widgets/circle_icon_button.dart';
 import '../widgets/line_icon.dart';
 import '../widgets/paper_texture.dart';
@@ -17,8 +15,8 @@ class LearnFoundScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scene = currentSceneAnalysis;
     final learningContent = sessionResult?.learningContent;
+
     return Scaffold(
       backgroundColor: AppColors.paper,
       body: Stack(
@@ -64,18 +62,6 @@ class LearnFoundScreen extends StatelessWidget {
                           style: sketchBody(fontSize: 15),
                         ),
                         const SizedBox(height: 22),
-                        GridView.count(
-                          crossAxisCount: 4,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          mainAxisSpacing: 8,
-                          crossAxisSpacing: 8,
-                          children: [
-                            for (final s in scene.allSwatches)
-                              AtelierTile(supply: s),
-                          ],
-                        ),
-                        const SizedBox(height: 28),
                         Text('concepts to explore', style: monoLabel()),
                         const SizedBox(height: 12),
                         for (final element
