@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import '../data/mock_data.dart';
 import '../data/models.dart';
+import '../theme/app_theme.dart';
 
 /// In-memory mock store for saved Library entries. Local saves are instant
 /// (see [add]); [mergeRemote] additionally folds in artworks the backend
@@ -24,9 +24,11 @@ class LibraryStore {
   void mergeRemote(List<Map<String, dynamic>> artworks) {
     for (final artwork in artworks) {
       final remoteId = artwork['id']?.toString();
-      if (remoteId == null || _items.any((e) => e.remoteId == remoteId)) continue;
+      if (remoteId == null || _items.any((e) => e.remoteId == remoteId))
+        continue;
 
-      final metadata = (artwork['metadata'] as Map?)?.cast<String, dynamic>() ?? const {};
+      final metadata =
+          (artwork['metadata'] as Map?)?.cast<String, dynamic>() ?? const {};
       final origin = metadata['origin']?.toString() ?? 'Create';
       final isLearn = origin == 'Learn';
 
@@ -35,12 +37,17 @@ class LibraryStore {
         LibraryEntry(
           id: remoteId,
           remoteId: remoteId,
-          challengeTitle: metadata['title']?.toString() ?? artwork['title']?.toString() ?? 'Untitled challenge',
+          challengeTitle:
+              metadata['title']?.toString() ??
+              artwork['title']?.toString() ??
+              'Untitled challenge',
           origin: origin,
           conceptTitle: metadata['conceptTitle']?.toString(),
-          photoTint: isLearn ? const Color(0xFFDCEBF5) : const Color(0xFFFBEFD2),
+          photoTint: isLearn ? AppColors.tealTint : AppColors.marigoldTint,
           photoGlyph: isLearn ? IconGlyph.symmetry : IconGlyph.spark,
-          date: DateTime.tryParse(artwork['createdAt']?.toString() ?? '') ?? DateTime.now(),
+          date:
+              DateTime.tryParse(artwork['createdAt']?.toString() ?? '') ??
+              DateTime.now(),
         ),
       );
     }

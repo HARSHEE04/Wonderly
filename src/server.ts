@@ -3,10 +3,12 @@ import cors from 'cors';
 import { env } from './config/env.js';
 import { isMongoConnected } from './database/mongo.js';
 import { ApiError, normalizeError } from './core/errors.js';
-import { sceneAnalysisSchema } from './api/validation/schemas.js';
+import { challengeInstanceCreateSchema, creativeChallengeRequestSchema, sceneAnalysisSchema } from './api/validation/schemas.js';
 import {
   createSession,
+  createChallengeInstance,
   getSession,
+  getChallengeInstance,
   recommendForScene,
   getUserProgress,
   getArtworksForUser,
@@ -16,7 +18,11 @@ import {
   addArtwork
 } from './services/sessionService.js';
 import { learningResourceService } from './services/learningResourceService.js';
+import { generateLearningContent } from './services/learningContentService.js';
+import { analyzeSceneImage } from './services/cvAnalysisService.js';
 import { validateSceneAnalysis } from './product/engine.js';
+import { getOrGenerateCreativeChallenge } from './services/creativeChallengeService.js';
+import { getChallengeInstancesForUserRecord } from './database/repository.js';
 
 const app = express();
 app.use(cors({ origin: env.corsOrigin }));
@@ -68,6 +74,50 @@ app.post('/api/sessions/:sessionId/scene-analysis', async (req, res) => {
     const recommendation = await recommendForScene(parsed, session.userId, session.id);
 
     res.json({ success: true, data: { sessionId: session.id, recommendation } });
+  } catch (error) {
+    const normalized = normalizeError(error);
+    res.status(normalized.statusCode).json({ success: false, error: normalized });
+  }
+});
+
+app.post('/api/sessions/:sessionId/challenge-instance', async (req, res) => {
+  try {
+    const input = challengeInstanceCreateSchema.parse(req.body);
+    const instance = await createChallengeInstance(req.params.sessionId, input.title, input.instructions);
+    res.status(201).json({ success: true, data: instance });
+  } catch (error) {
+    const normalized = normalizeError(error);
+    res.status(normalized.statusCode).json({ success: false, error: normalized });
+  }
+});
+
+app.post('/api/sessions/:sessionId/creative-challenge', async (req, res) => {
+  try {
+    const input = creativeChallengeRequestSchema.parse(req.body ?? {});
+    const instance = await getOrGenerateCreativeChallenge(req.params.sessionId, input.learningContext);
+    res.json({ success: true, data: instance });
+  } catch (error) {
+    const normalized = normalizeError(error);
+    res.status(normalized.statusCode).json({ success: false, error: normalized });
+  }
+});
+
+app.get('/api/users/:userId/challenge-instances', async (req, res) => {
+  try {
+    res.json({ success: true, data: await getChallengeInstancesForUserRecord(req.params.userId) });
+  } catch (error) {
+    const normalized = normalizeError(error);
+    res.status(normalized.statusCode).json({ success: false, error: normalized });
+  }
+});
+
+app.get('/api/sessions/:sessionId/challenge-instance', async (req, res) => {
+  try {
+    const instance = await getChallengeInstance(req.params.sessionId);
+    if (!instance) {
+      throw new ApiError('Challenge instance not found', 404);
+    }
+    res.json({ success: true, data: instance });
   } catch (error) {
     const normalized = normalizeError(error);
     res.status(normalized.statusCode).json({ success: false, error: normalized });
@@ -159,7 +209,41 @@ app.get('/api/mock-scenes/:sceneName', (req, res) => {
   res.json({ success: true, data: getMockScene(req.params.sceneName) });
 });
 
-app.use((error: unknown, _req: express.Request, res: express.Response) => {
+app.post('/api/scan/analyze', express.raw({ type: 'image/*', limit: '10mb' }), async (req, res) => {
+  try {
+    if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+      throw new ApiError('image body is required', 400);
+    }
+    const sceneAnalysis = await analyzeSceneImage(req.body);
+    res.json({ success: true, data: sceneAnalysis });
+  } catch (error) {
+    const normalized = normalizeError(error);
+    res.status(normalized.statusCode).json({ success: false, error: normalized });
+  }
+});
+
+app.post('/api/learning/content', async (req, res) => {
+  try {
+    const sessionId = typeof req.body?.sessionId === 'string' ? req.body.sessionId : undefined;
+    const session = sessionId ? await getSession(sessionId) : undefined;
+    if (sessionId && !session?.sceneAnalysis) {
+      throw new ApiError('Learning session scene not found', 404);
+    }
+    const parsed = sceneAnalysisSchema.parse(session?.sceneAnalysis ?? req.body.sceneAnalysis ?? req.body);
+    validateSceneAnalysis(parsed);
+    const content = await generateLearningContent(parsed);
+    res.json({ success: true, data: content });
+  } catch (error) {
+    const normalized = normalizeError(error);
+    res.status(normalized.statusCode).json({ success: false, error: normalized });
+  }
+});
+
+app.use((_req, res) => {
+  res.status(404).json({ success: false, error: { message: 'Not found', statusCode: 404 } });
+});
+
+app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   const normalized = normalizeError(error);
   res.status(normalized.statusCode).json({ success: false, error: normalized });
 });

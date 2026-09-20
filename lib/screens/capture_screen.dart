@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_theme.dart';
 import '../data/models.dart';
 import '../widgets/app_transitions.dart';
 import '../widgets/circle_icon_button.dart';
 import '../widgets/line_icon.dart';
+import '../widgets/paper_texture.dart';
 import '../widgets/viewfinder_frame.dart';
 import 'capture_preview_screen.dart';
 
@@ -27,71 +29,97 @@ class CaptureScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.ink,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-          child: Column(
-            children: [
-              Row(
+      backgroundColor: AppColors.paper,
+      body: Stack(
+        children: [
+          const Positioned.fill(child: PaperTexture()),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              child: Column(
                 children: [
-                  CircleIconButton(
-                    icon: Icons.close_rounded,
-                    onTap: () => Navigator.of(context).pop(),
-                    filled: false,
+                  Row(
+                    children: [
+                      CircleIconButton(
+                        icon: Icons.close_rounded,
+                        onTap: () => Navigator.of(context).pop(),
+                        filled: false,
+                      ),
+                      const Spacer(),
+                      Text(
+                        'photograph your artwork',
+                        style: monoLabel(color: AppColors.inkSoft),
+                      ),
+                      const Spacer(),
+                      const SizedBox(width: 38),
+                    ],
                   ),
-                  const Spacer(),
-                  Text('photograph your artwork', style: monoLabel(color: AppColors.paperLight.withValues(alpha: 0.7))),
-                  const Spacer(),
-                  const SizedBox(width: 38),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18),
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFF2A2C52), Color(0xFF1B1D3D)],
+                  const SizedBox(height: 14),
+                  Expanded(
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF2A2C52), Color(0xFF1B1D3D)],
+                            ),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: Center(
+                            child: LineIcon(
+                              glyph: IconGlyph.spark,
+                              size: 90,
+                              color: AppColors.paperLight.withValues(
+                                alpha: 0.55,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const ViewfinderFrame(),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pushReplacement(
+                      risePageRoute(
+                        CapturePreviewScreen(
+                          challenge: challenge,
+                          origin: origin,
+                          conceptTitle: conceptTitle,
+                          sessionId: sessionId,
                         ),
                       ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Center(
-                        child: LineIcon(glyph: IconGlyph.spark, size: 90, color: AppColors.paperLight.withValues(alpha: 0.55)),
+                    ),
+                    child: Container(
+                      width: 68,
+                      height: 68,
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.ink.withValues(alpha: 0.7),
+                          width: 2,
+                        ),
+                      ),
+                      child: const DecoratedBox(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.ink,
+                        ),
                       ),
                     ),
-                    const ViewfinderFrame(),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 22),
-              GestureDetector(
-                onTap: () => Navigator.of(context).pushReplacement(risePageRoute(CapturePreviewScreen(
-                  challenge: challenge,
-                  origin: origin,
-                  conceptTitle: conceptTitle,
-                  sessionId: sessionId,
-                ))),
-                child: Container(
-                  width: 68,
-                  height: 68,
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.paperLight.withValues(alpha: 0.7), width: 2),
                   ),
-                  child: const DecoratedBox(decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.paperLight)),
-                ),
+                  const SizedBox(height: 10),
+                ],
               ),
-              const SizedBox(height: 10),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_theme.dart';
 import '../data/mock_data.dart';
 import '../data/models.dart';
@@ -7,69 +8,167 @@ import '../widgets/app_transitions.dart';
 import '../widgets/atelier_button.dart';
 import '../widgets/challenge_tags.dart';
 import '../widgets/circle_icon_button.dart';
+import '../widgets/highlight_marker.dart';
+import '../widgets/line_icon.dart';
 import '../widgets/paper_texture.dart';
+import '../widgets/sticky_note.dart';
 import 'create_reminder_screen.dart';
 
-class CreateChallengeScreen extends StatelessWidget {
-  const CreateChallengeScreen({super.key});
+class CreateChallengeScreen extends StatefulWidget {
+  /// A session already created by the scan flow (`LearnAnalyzingScreen`,
+  /// origin 'Create'), which has already posted its scene analysis. When
+  /// provided, this screen skips straight to generating the challenge for
+  /// it. When null (this screen opened without scanning first), it creates
+  /// its own session and posts the mocked scene, same as before scanning
+  /// existed.
+  final String? sessionId;
 
-  /// Starts a real 'creative' session and asks the backend to recommend a
-  /// challenge for the (still mocked) scene, merging its verdict into the
-  /// locally-authored copy. Falls back to the plain mock challenge, with no
-  /// session id, if the backend is unreachable.
-  Future<void> _startChallenge(BuildContext context, CreativeChallenge challenge) async {
-    String? sessionId;
-    CreativeChallenge finalChallenge = challenge;
+  const CreateChallengeScreen({super.key, this.sessionId});
+
+  @override
+  State<CreateChallengeScreen> createState() => _CreateChallengeScreenState();
+}
+
+class _CreateChallengeScreenState extends State<CreateChallengeScreen> {
+  String? _sessionId;
+  bool _sceneAttached = false;
+  bool _loading = false;
+  CreativeChallenge? _challenge;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _sessionId = widget.sessionId;
+    _sceneAttached = widget.sessionId != null;
+    _loadChallenge();
+  }
+
+  Future<void> _loadChallenge() async {
+    if (_loading) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
-      final id = await ApiClient().createSession(userId: demoUserId, mode: 'creative');
-      final decision = await ApiClient().recommendChallenge(
-        scene: mockSceneAnalysis.toApiJson(),
+      final api = ApiClient();
+      _sessionId ??= await api.createSession(
         userId: demoUserId,
+        mode: 'creative',
       );
-      sessionId = id;
-      finalChallenge = challenge.mergeDecision(decision);
+      if (!_sceneAttached) {
+        final decision = await api.postSceneAnalysis(
+          sessionId: _sessionId!,
+          scene: currentSceneAnalysis.toApiJson(),
+        );
+        if (decision == null)
+          throw ApiException('No challenge available for this scene');
+        _sceneAttached = true;
+      }
+      final saved = await api.generateCreativeChallenge(_sessionId!);
+      if (!mounted) return;
+      setState(() => _challenge = CreativeChallenge.fromInstance(saved));
     } catch (_) {
-      // backend unavailable — proceed with the local mock challenge
+      if (mounted) {
+        setState(
+          () => _error = 'Could not load your challenge. Please try again.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
-    if (!context.mounted) return;
-    Navigator.of(context).push(risePageRoute(CreateReminderScreen(challenge: finalChallenge, sessionId: sessionId)));
   }
 
   @override
   Widget build(BuildContext context) {
-    final challenge = mockDailyChallenge;
+    final challenge = _challenge;
     return Scaffold(
       backgroundColor: AppColors.paper,
       body: Stack(
         children: [
           const Positioned.fill(child: PaperTexture()),
           SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 26),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 4),
-                  CircleIconButton(icon: Icons.arrow_back_ios_new_rounded, onTap: () => Navigator.of(context).pop()),
-                  const SizedBox(height: 22),
-                  Text('create · daily challenge', style: monoLabel()),
-                  const SizedBox(height: 10),
-                  Text(challenge.title, style: editorialDisplay(fontSize: 30)),
-                  const SizedBox(height: 14),
-                  Text(challenge.instructions, style: sketchBody(fontSize: 14.5)),
-                  const SizedBox(height: 16),
-                  ChallengeTags(challenge: challenge),
-                  const Spacer(),
+                  CircleIconButton(
+                    icon: Icons.arrow_back_ios_new_rounded,
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(height: 26),
+                  if (_loading)
+                    const SizedBox(
+                      height: 220,
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (_error != null)
+                    Text(_error!, style: sketchBody(fontSize: 16.5))
+                  else if (challenge != null)
+                    StickyNote(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('create · daily challenge', style: monoLabel()),
+                          const SizedBox(height: 12),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const LineIcon(
+                                glyph: IconGlyph.compass,
+                                size: 30,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: HighlightMarker(
+                                  child: Text(
+                                    challenge.title,
+                                    style: editorialDisplay(fontSize: 30),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            challenge.instructions,
+                            style: sketchBody(fontSize: 16.5),
+                          ),
+                          const SizedBox(height: 16),
+                          ChallengeTags(challenge: challenge),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 40),
                   Text(
                     'there are no wrong answers here',
-                    style: sketchDisplay(fontSize: 18, color: AppColors.pinkDeep),
+                    style: sketchDisplay(
+                      fontSize: 20,
+                      color: AppColors.pinkDeep,
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  AtelierButton(
-                    label: 'start challenge',
-                    fill: AppColors.ink,
-                    onTap: () => _startChallenge(context, challenge),
-                  ),
+                  if (_error != null)
+                    AtelierButton(
+                      label: 'retry',
+                      fill: AppColors.ink,
+                      onTap: _loadChallenge,
+                    )
+                  else if (!_loading && challenge != null)
+                    AtelierButton(
+                      label: 'start challenge',
+                      fill: AppColors.ink,
+                      onTap: () => Navigator.of(context).push(
+                        risePageRoute(
+                          CreateReminderScreen(
+                            challenge: challenge,
+                            sessionId: _sessionId,
+                          ),
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 28),
                 ],
               ),

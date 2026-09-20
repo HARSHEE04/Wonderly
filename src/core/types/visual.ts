@@ -77,7 +77,7 @@ export interface ChallengeDecision {
   reasonCodes: string[];
   personalizationContext?: {
     underusedConcepts?: string[];
-    recentlyUsedChallengeTypes?: string[];
+    recentChallengeTypes?: string[];
   };
 }
 
@@ -105,12 +105,59 @@ export interface LearningResource {
   verified?: boolean;
 }
 
-export interface GeminiChallengeContext {
+export type CreativeSourceMode = 'standalone' | 'learning';
+
+export interface CreativeLearningContext {
+  focusConcept: string;
+  learningInsight: string;
+  learningEvidence?: string[];
+}
+
+export interface CreativeGenerationContext {
   sessionId: string;
+  sourceMode: CreativeSourceMode;
   challengeDecision: ChallengeDecision;
   selectedSceneFeatures: SceneAnalysis;
   personalization?: {
     underusedConcepts: string[];
     recentChallengeTypes: string[];
   };
+  learningContext?: CreativeLearningContext;
+}
+
+export interface ChallengeInstance {
+  generationSource?: 'openai' | 'fallback';
+  reasonCodes?: string[];
+  id: string;
+  userId: string;
+  sessionId: string;
+  templateId: string;
+  challengeType: ChallengeType;
+  difficulty: number;
+  sourceMode: CreativeSourceMode;
+  title: string;
+  instructions: string;
+  focusConcepts: string[];
+  usedSceneFeatures: ChallengeDecision['matchedIngredients'];
+  whyThisFitsScene: string[];
+  learningContext?: CreativeLearningContext;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export type LearningElementCategory = 'shape' | 'color' | 'line' | 'texture' | 'pattern';
+
+export interface LearningElement {
+  category: LearningElementCategory;
+  name: string;
+  description: string;
+  artisticUse: string;
+  effect: string;
+  howToUse: string;
+  activity: string;
+}
+
+export interface LearningContent {
+  summary: string;
+  elements: LearningElement[];
 }

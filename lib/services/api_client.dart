@@ -1,5 +1,10 @@
 import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
+
+import '../data/models.dart';
 
 /// Matches the `demo-user` seeded by the backend's `npm run seed` script
 /// (`src/data/seed.ts`). There's no auth in this wireframe, so every device
@@ -20,7 +25,12 @@ class ApiException implements Exception {
 class LearnSessionResult {
   final String sessionId;
   final Map<String, dynamic>? decision;
-  const LearnSessionResult({required this.sessionId, this.decision});
+  final LearningContent learningContent;
+  const LearnSessionResult({
+    required this.sessionId,
+    required this.learningContent,
+    this.decision,
+  });
 }
 
 /// Thin client for the Node/Express backend in this repo (`src/server.ts`).
@@ -32,11 +42,23 @@ class ApiClient {
   static final ApiClient _instance = ApiClient._();
   factory ApiClient() => _instance;
 
-  /// Backend always runs on port 4000 (see `.env`), on the same host that's
-  /// serving this Flutter web build — so this works whether that host is
-  /// `localhost` or a LAN IP, without hardcoding either.
+  /// An explicit override, e.g. `--dart-define=API_BASE_URL=https://foo.trycloudflare.com`
+  /// — needed when the app and backend are served from different origins,
+  /// such as two separate tunnels, where the app can't infer the backend's
+  /// address from its own URL.
+  static const String _override = String.fromEnvironment('API_BASE_URL');
+
+  /// Backend always runs on port 4000 (see `.env`) unless [_override] is set.
+  /// On web, it's normally served from the same host as this build
+  /// (`localhost` or a LAN IP), read off the page's own URL. On a native
+  /// build (iOS Simulator, physical device), there's no page URL to read —
+  /// the iOS Simulator shares the Mac's network stack, so `localhost`
+  /// reaches a backend running on the host machine directly.
   static String get baseUrl {
-    final host = Uri.base.host.isNotEmpty ? Uri.base.host : 'localhost';
+    if (_override.isNotEmpty) return _override;
+    final host = kIsWeb
+        ? (Uri.base.host.isNotEmpty ? Uri.base.host : 'localhost')
+        : 'localhost';
     return 'http://$host:4000';
   }
 
@@ -45,16 +67,26 @@ class ApiClient {
   Map<String, dynamic> _unwrap(http.Response res) {
     final decoded = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode >= 400 || decoded['success'] == false) {
-      final message = (decoded['error'] as Map?)?['message']?.toString() ?? 'Request failed (${res.statusCode})';
+      final message =
+          (decoded['error'] as Map?)?['message']?.toString() ??
+          'Request failed (${res.statusCode})';
       throw ApiException(message);
     }
     return decoded;
   }
 
-  Future<Map<String, dynamic>> _post(String path, Map<String, dynamic> body) async {
+  Future<Map<String, dynamic>> _post(
+    String path,
+    Map<String, dynamic> body, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
     final res = await http
-        .post(_uri(path), headers: const {'Content-Type': 'application/json'}, body: jsonEncode(body))
-        .timeout(const Duration(seconds: 8));
+        .post(
+          _uri(path),
+          headers: const {'Content-Type': 'application/json'},
+          body: jsonEncode(body),
+        )
+        .timeout(timeout);
     final decoded = _unwrap(res);
     return decoded['data'] as Map<String, dynamic>? ?? {};
   }
@@ -65,7 +97,25 @@ class ApiClient {
     return decoded['data'] as List<dynamic>? ?? [];
   }
 
-  Future<String> createSession({required String userId, required String mode}) async {
+  /// Uploads a captured photo to the backend's OpenCV pipeline
+  /// (`computer_vision/scene_analysis.py`) and returns the raw SceneAnalysis
+  /// JSON (colors/shapes/textures/lines/patterns) it detected.
+  Future<Map<String, dynamic>> analyzeScan(Uint8List photoBytes) async {
+    final res = await http
+        .post(
+          _uri('/api/scan/analyze'),
+          headers: const {'Content-Type': 'image/jpeg'},
+          body: photoBytes,
+        )
+        .timeout(const Duration(seconds: 20));
+    final decoded = _unwrap(res);
+    return decoded['data'] as Map<String, dynamic>? ?? {};
+  }
+
+  Future<String> createSession({
+    required String userId,
+    required String mode,
+  }) async {
     final data = await _post('/api/sessions', {'userId': userId, 'mode': mode});
     return data['id'] as String;
   }
@@ -81,11 +131,46 @@ class ApiClient {
     return recommendation?['decision'] as Map<String, dynamic>?;
   }
 
+  Future<Map<String, dynamic>> createChallengeInstance({
+    required String sessionId,
+    required String title,
+    required String instructions,
+  }) {
+    return _post('/api/sessions/$sessionId/challenge-instance', {
+      'title': title,
+      'instructions': instructions,
+    });
+  }
+
+  Future<Map<String, dynamic>> generateCreativeChallenge(
+    String sessionId, {
+    Map<String, dynamic>? learningContext,
+  }) {
+    return _post('/api/sessions/$sessionId/creative-challenge', {
+      if (learningContext != null) 'learningContext': learningContext,
+    }, timeout: const Duration(seconds: 30));
+  }
+
+  Future<LearningContent> generateLearningContent(String sessionId) async {
+    final data = await _post('/api/learning/content', {
+      'sessionId': sessionId,
+    }, timeout: const Duration(seconds: 30));
+    return LearningContent.fromJson(data);
+  }
+
+  Future<List<Map<String, dynamic>>> getChallengeHistory(String userId) async {
+    final list = await _getList('/api/users/$userId/challenge-instances');
+    return list.cast<Map<String, dynamic>>();
+  }
+
   Future<Map<String, dynamic>?> recommendChallenge({
     required Map<String, dynamic> scene,
     required String userId,
   }) async {
-    final data = await _post('/api/challenges/recommend', {'sceneAnalysis': scene, 'userId': userId});
+    final data = await _post('/api/challenges/recommend', {
+      'sceneAnalysis': scene,
+      'userId': userId,
+    });
     return data['decision'] as Map<String, dynamic>?;
   }
 

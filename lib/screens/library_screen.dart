@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_theme.dart';
 import '../data/models.dart';
 import '../services/api_client.dart';
@@ -6,6 +7,7 @@ import '../state/library_store.dart';
 import '../widgets/circle_icon_button.dart';
 import '../widgets/line_icon.dart';
 import '../widgets/paper_texture.dart';
+import '../widgets/washi_tape.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -50,7 +52,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                   child: Row(
                     children: [
-                      CircleIconButton(icon: Icons.arrow_back_ios_new_rounded, onTap: () => Navigator.of(context).pop()),
+                      CircleIconButton(
+                        icon: Icons.arrow_back_ios_new_rounded,
+                        onTap: () => Navigator.of(context).pop(),
+                      ),
                     ],
                   ),
                 ),
@@ -59,25 +64,34 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('your library', style: sketchDisplay(fontSize: 32)),
+                      Text('your library', style: sketchDisplay(fontSize: 34)),
                       const SizedBox(height: 6),
-                      Text('${items.length} pages in your creative journey', style: sketchBody(fontSize: 13)),
+                      Text(
+                        '${items.length} pages in your creative journey',
+                        style: sketchBody(fontSize: 15),
+                      ),
                     ],
                   ),
                 ),
                 Expanded(
                   child: items.isEmpty
-                      ? Center(child: Text('nothing here yet', style: monoLabel()))
+                      ? Center(
+                          child: Text('nothing here yet', style: monoLabel()),
+                        )
                       : GridView.builder(
                           padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 16,
-                            crossAxisSpacing: 16,
-                            childAspectRatio: 0.78,
-                          ),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 16,
+                                crossAxisSpacing: 16,
+                                childAspectRatio: 0.56,
+                              ),
                           itemCount: items.length,
-                          itemBuilder: (context, i) => _LibraryCard(entry: items[i]),
+                          itemBuilder: (context, i) => _LibraryCard(
+                            entry: items[i],
+                            tiltRight: i.isEven,
+                          ),
                         ),
                 ),
               ],
@@ -91,15 +105,25 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
 class _LibraryCard extends StatelessWidget {
   final LibraryEntry entry;
-  const _LibraryCard({required this.entry});
+  final bool tiltRight;
+  const _LibraryCard({required this.entry, this.tiltRight = true});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final tapeColor = entry.origin == 'Create'
+        ? AppColors.tapePurple
+        : AppColors.tapeGreen;
+    final card = Container(
       decoration: BoxDecoration(
         color: AppColors.paperLight,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: AppColors.ink.withValues(alpha: 0.08), blurRadius: 16, offset: const Offset(0, 8))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.ink.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -109,7 +133,13 @@ class _LibraryCard extends StatelessWidget {
             aspectRatio: 1.1,
             child: Container(
               color: entry.photoTint,
-              child: Center(child: LineIcon(glyph: entry.photoGlyph, size: 44, color: AppColors.ink.withValues(alpha: 0.6))),
+              child: Center(
+                child: LineIcon(
+                  glyph: entry.photoGlyph,
+                  size: 44,
+                  color: AppColors.ink.withValues(alpha: 0.6),
+                ),
+              ),
             ),
           ),
           Expanded(
@@ -123,32 +153,73 @@ class _LibraryCard extends StatelessWidget {
                     entry.challengeTitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: sketchBody(fontSize: 12.5, weight: FontWeight.w700, color: AppColors.ink),
+                    style: sketchBody(
+                      fontSize: 14,
+                      weight: FontWeight.w700,
+                      color: AppColors.ink,
+                    ),
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    entry.conceptTitle != null ? 'from ${entry.conceptTitle}' : entry.origin,
+                    entry.conceptTitle != null
+                        ? 'from ${entry.conceptTitle}'
+                        : entry.origin,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: sketchBody(fontSize: 10),
+                    style: sketchBody(fontSize: 11.5),
                   ),
                   const Spacer(),
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.ink.withValues(alpha: 0.16)),
+                          border: Border.all(
+                            color: AppColors.ink.withValues(alpha: 0.16),
+                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Text(entry.origin.toLowerCase(), style: monoLabel(fontSize: 7.5)),
+                        child: Text(
+                          entry.origin.toLowerCase(),
+                          style: monoLabel(fontSize: 9.5, letterSpacing: 0.8),
+                        ),
                       ),
-                      const Spacer(),
-                      Text(_formatDate(entry.date), style: monoLabel(fontSize: 7.5)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _formatDate(entry.date),
+                          textAlign: TextAlign.right,
+                          style: monoLabel(fontSize: 9.5, letterSpacing: 0.8),
+                        ),
+                      ),
                     ],
                   ),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          card,
+          Positioned(
+            top: -10,
+            left: tiltRight ? 14 : null,
+            right: tiltRight ? null : 14,
+            child: WashiTape(
+              color: tapeColor,
+              angle: tiltRight ? -0.18 : 0.18,
+              width: 15,
+              height: 32,
             ),
           ),
         ],
