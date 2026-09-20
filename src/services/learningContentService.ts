@@ -119,7 +119,7 @@ export async function generateLearningContent(scene: SceneAnalysis): Promise<Lea
   let response;
   try {
     response = await openai.responses.parse({
-      model: env.openaiModel,
+      model: env.learningOpenaiModel,
       input: [
         { role: 'system', content: LEARNING_CONTENT_SYSTEM_PROMPT },
         { role: 'user', content: buildUserPrompt(normalized) }

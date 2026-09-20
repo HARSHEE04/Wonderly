@@ -77,6 +77,54 @@ class LearningResource {
   });
 }
 
+class LearningElement {
+  final String category;
+  final String name;
+  final String description;
+  final String artisticUse;
+  final String effect;
+  final String howToUse;
+  final String activity;
+
+  const LearningElement({
+    required this.category,
+    required this.name,
+    required this.description,
+    required this.artisticUse,
+    required this.effect,
+    required this.howToUse,
+    required this.activity,
+  });
+
+  factory LearningElement.fromJson(Map<String, dynamic> json) =>
+      LearningElement(
+        category: json['category'] as String,
+        name: json['name'] as String,
+        description: json['description'] as String,
+        artisticUse: json['artisticUse'] as String,
+        effect: json['effect'] as String,
+        howToUse: json['howToUse'] as String,
+        activity: json['activity'] as String,
+      );
+}
+
+class LearningContent {
+  final String summary;
+  final List<LearningElement> elements;
+
+  const LearningContent({required this.summary, required this.elements});
+
+  factory LearningContent.fromJson(Map<String, dynamic> json) =>
+      LearningContent(
+        summary: json['summary'] as String,
+        elements: (json['elements'] as List)
+            .map(
+              (item) => LearningElement.fromJson(item as Map<String, dynamic>),
+            )
+            .toList(),
+      );
+}
+
 /// Placeholder for the teammate-owned CV/Gemini output. Frontend only reads
 /// this shape; the real data will come from another teammate's pipeline.
 /// Field names match `SceneAnalysis` in `src/core/types/visual.ts` exactly
@@ -145,13 +193,10 @@ extension SceneAnalysisApi on SceneAnalysis {
       '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
 }
 
-/// Placeholder for the teammate-owned challenge-generation logic.
-/// `challengeType` mirrors the backend's fixed `ChallengeType` union
-/// (character | poster | architecture | abstract | pattern | composition)
-/// and `difficulty` mirrors its numeric scale — the backend has no
-/// `title`/`instructions` yet (that's the future Gemini handoff), so those
-/// two fields are this wireframe's stand-in for that output.
+/// Artist-facing challenge returned by the backend, or authored Learn copy.
+/// Standalone Create reads the exact title/instructions from its saved instance.
 class CreativeChallenge {
+  final String? instanceId;
   final String title;
   final String instructions;
   final int difficulty;
@@ -161,6 +206,7 @@ class CreativeChallenge {
   final List<String>? reasonCodes;
 
   const CreativeChallenge({
+    this.instanceId,
     required this.title,
     required this.instructions,
     required this.difficulty,
@@ -169,6 +215,18 @@ class CreativeChallenge {
     this.templateId,
     this.reasonCodes,
   });
+
+  factory CreativeChallenge.fromInstance(Map<String, dynamic> json) {
+    return CreativeChallenge(
+      instanceId: json['id'] as String,
+      title: json['title'] as String,
+      instructions: json['instructions'] as String,
+      difficulty: (json['difficulty'] as num).toInt(),
+      challengeType: json['challengeType'] as String,
+      templateId: json['templateId'] as String,
+      reasonCodes: (json['reasonCodes'] as List?)?.cast<String>(),
+    );
+  }
 
   /// Folds in a backend `ChallengeDecision` (`src/core/types/visual.ts`),
   /// keeping this wireframe's authored title/instructions since the backend

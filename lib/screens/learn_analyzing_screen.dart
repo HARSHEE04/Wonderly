@@ -51,16 +51,8 @@ class _LearnAnalyzingScreenState extends State<LearnAnalyzingScreen>
       final result = await _sessionFuture;
       if (!mounted) return;
       if (widget.origin == 'Create') {
-        final challenge = challengeForType(
-          result?.decision?['challengeType'] as String? ?? 'composition',
-        ).mergeDecision(result?.decision);
         Navigator.of(context).pushReplacement(
-          risePageRoute(
-            CreateChallengeScreen(
-              challenge: challenge,
-              sessionId: result?.sessionId,
-            ),
-          ),
+          risePageRoute(CreateChallengeScreen(sessionId: result?.sessionId)),
         );
       } else {
         Navigator.of(context).pushReplacement(
@@ -83,7 +75,14 @@ class _LearnAnalyzingScreenState extends State<LearnAnalyzingScreen>
         sessionId: sessionId,
         scene: mockSceneAnalysis.toApiJson(),
       );
-      return LearnSessionResult(sessionId: sessionId, decision: decision);
+      final learningContent = await ApiClient().generateLearningContent(
+        sessionId,
+      );
+      return LearnSessionResult(
+        sessionId: sessionId,
+        decision: decision,
+        learningContent: learningContent,
+      );
     } catch (_) {
       return null;
     }
