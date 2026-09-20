@@ -109,19 +109,18 @@ class _LearnScanScreenState extends State<LearnScanScreen>
     }
   }
 
-  /// Capture from the live camera, or allow selecting a file if there is no
-  /// camera (common on desktops or when permission was denied).
+  /// Capture from the live camera, or fall back to the OS/browser's native
+  /// single-shot capture (works even when a live preview can't start, e.g.
+  /// the device is locked by another app or the browser blocked
+  /// getUserMedia) so a photo can still be taken either way.
   Future<Uint8List?> _captureImage() async {
     final controller = _controller;
     if (controller != null && controller.value.isInitialized) {
       final photo = await controller.takePicture();
       return photo.readAsBytes();
     }
-    // Continuous mode samples a camera frame; it should not open a file
-    // picker automatically when there is no camera available.
-    if (widget.mode != ScanMode.photo) return null;
     final photo = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
+      source: ImageSource.camera,
       imageQuality: 85,
     );
     return photo?.readAsBytes();
@@ -134,11 +133,9 @@ class _LearnScanScreenState extends State<LearnScanScreen>
       final bytes = await _captureImage();
       if (!mounted) return;
       if (bytes == null || bytes.isEmpty) {
-        if (widget.mode == ScanMode.continuous) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Camera unavailable. Try photo mode.')),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No photo was captured.')),
+        );
         return;
       }
       Navigator.of(context).pushReplacement(
@@ -365,14 +362,11 @@ class _LearnScanScreenState extends State<LearnScanScreen>
                   textAlign: TextAlign.center,
                   style: monoLabel(color: AppColors.inkSoft, fontSize: 12),
                 ),
-                if (widget.mode == ScanMode.photo) ...[
-                  const SizedBox(height: 10),
-                  Text(
-                    'Use the shutter button to choose a photo instead.',
-                    textAlign: TextAlign.center,
-                    style: monoLabel(color: AppColors.inkSoft, fontSize: 11),
-                  ),
-                ],
+                const SizedBox(height: 14),
+                OutlinedButton(
+                  onPressed: _capturing ? null : _goToAnalyzing,
+                  child: const Text('Take a photo instead'),
+                ),
               ],
             ),
           ),
