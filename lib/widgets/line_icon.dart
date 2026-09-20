@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../data/models.dart';
 import '../theme/app_theme.dart';
 
@@ -63,9 +64,21 @@ class _LineIconPainter extends CustomPainter {
         canvas.drawPath(path, paint);
         break;
       case IconGlyph.lines:
-        canvas.drawLine(Offset(w * 0.24, h * 0.82), Offset(w * 0.24, h * 0.3), paint);
-        canvas.drawLine(Offset(w * 0.5, h * 0.86), Offset(w * 0.5, h * 0.14), paint);
-        canvas.drawLine(Offset(w * 0.76, h * 0.82), Offset(w * 0.76, h * 0.46), paint);
+        canvas.drawLine(
+          Offset(w * 0.24, h * 0.82),
+          Offset(w * 0.24, h * 0.3),
+          paint,
+        );
+        canvas.drawLine(
+          Offset(w * 0.5, h * 0.86),
+          Offset(w * 0.5, h * 0.14),
+          paint,
+        );
+        canvas.drawLine(
+          Offset(w * 0.76, h * 0.82),
+          Offset(w * 0.76, h * 0.46),
+          paint,
+        );
         break;
       case IconGlyph.wave:
         final path = Path()
@@ -80,7 +93,11 @@ class _LineIconPainter extends CustomPainter {
       case IconGlyph.stripes:
         for (int i = 0; i < 3; i++) {
           final x = w * (0.22 + i * 0.28);
-          canvas.drawLine(Offset(x, h * 0.78), Offset(x + w * 0.14, h * 0.18), paint);
+          canvas.drawLine(
+            Offset(x, h * 0.78),
+            Offset(x + w * 0.14, h * 0.18),
+            paint,
+          );
         }
         break;
       case IconGlyph.spark:
@@ -97,9 +114,19 @@ class _LineIconPainter extends CustomPainter {
         canvas.drawPath(path, paint);
         break;
       case IconGlyph.symmetry:
-        canvas.drawLine(Offset(w * 0.5, h * 0.08), Offset(w * 0.5, h * 0.92), paint..strokeWidth = strokeWidth * 0.8);
-        canvas.drawOval(Rect.fromLTWH(w * 0.14, h * 0.28, w * 0.28, h * 0.2), paint..strokeWidth = strokeWidth);
-        canvas.drawOval(Rect.fromLTWH(w * 0.58, h * 0.28, w * 0.28, h * 0.2), paint);
+        canvas.drawLine(
+          Offset(w * 0.5, h * 0.08),
+          Offset(w * 0.5, h * 0.92),
+          paint..strokeWidth = strokeWidth * 0.8,
+        );
+        canvas.drawOval(
+          Rect.fromLTWH(w * 0.14, h * 0.28, w * 0.28, h * 0.2),
+          paint..strokeWidth = strokeWidth,
+        );
+        canvas.drawOval(
+          Rect.fromLTWH(w * 0.58, h * 0.28, w * 0.28, h * 0.2),
+          paint,
+        );
         break;
       case IconGlyph.palette:
         final path = Path()
@@ -118,7 +145,11 @@ class _LineIconPainter extends CustomPainter {
         canvas.drawLine(Offset(w * 0.08, h * 0.86), vp, paint);
         canvas.drawLine(Offset(w * 0.92, h * 0.86), vp, paint);
         canvas.drawLine(Offset(w * 0.5, h * 0.86), vp, paint);
-        canvas.drawLine(Offset(w * 0.22, h * 0.86), Offset(w * 0.78, h * 0.86), paint);
+        canvas.drawLine(
+          Offset(w * 0.22, h * 0.86),
+          Offset(w * 0.78, h * 0.86),
+          paint,
+        );
         break;
       case IconGlyph.camera:
         final body = RRect.fromRectAndRadius(
@@ -126,10 +157,49 @@ class _LineIconPainter extends CustomPainter {
           Radius.circular(w * 0.06),
         );
         canvas.drawRRect(body, paint);
-        canvas.drawLine(Offset(w * 0.36, h * 0.32), Offset(w * 0.42, h * 0.2), paint);
-        canvas.drawLine(Offset(w * 0.42, h * 0.2), Offset(w * 0.6, h * 0.2), paint);
-        canvas.drawLine(Offset(w * 0.6, h * 0.2), Offset(w * 0.66, h * 0.32), paint);
+        canvas.drawLine(
+          Offset(w * 0.36, h * 0.32),
+          Offset(w * 0.42, h * 0.2),
+          paint,
+        );
+        canvas.drawLine(
+          Offset(w * 0.42, h * 0.2),
+          Offset(w * 0.6, h * 0.2),
+          paint,
+        );
+        canvas.drawLine(
+          Offset(w * 0.6, h * 0.2),
+          Offset(w * 0.66, h * 0.32),
+          paint,
+        );
         canvas.drawCircle(Offset(w * 0.5, h * 0.58), w * 0.16, paint);
+        break;
+      case IconGlyph.compass:
+        canvas.drawCircle(Offset(w * 0.5, h * 0.5), w * 0.38, paint);
+        final needle = Path()
+          ..moveTo(w * 0.63, h * 0.32)
+          ..lineTo(w * 0.52, h * 0.52)
+          ..lineTo(w * 0.37, h * 0.68)
+          ..lineTo(w * 0.48, h * 0.48)
+          ..close();
+        canvas.drawPath(needle, paint);
+        canvas.drawCircle(
+          Offset(w * 0.5, h * 0.5),
+          w * 0.026,
+          paint..style = PaintingStyle.fill,
+        );
+        break;
+      case IconGlyph.cloud:
+        final cloudPath = Path()
+          ..moveTo(w * 0.28, h * 0.66)
+          ..cubicTo(w * 0.16, h * 0.66, w * 0.10, h * 0.58, w * 0.10, h * 0.49)
+          ..cubicTo(w * 0.10, h * 0.40, w * 0.17, h * 0.33, w * 0.26, h * 0.33)
+          ..cubicTo(w * 0.28, h * 0.20, w * 0.39, h * 0.12, w * 0.51, h * 0.12)
+          ..cubicTo(w * 0.64, h * 0.12, w * 0.75, h * 0.21, w * 0.77, h * 0.34)
+          ..cubicTo(w * 0.87, h * 0.35, w * 0.94, h * 0.43, w * 0.94, h * 0.52)
+          ..cubicTo(w * 0.94, h * 0.61, w * 0.87, h * 0.66, w * 0.78, h * 0.66)
+          ..close();
+        canvas.drawPath(cloudPath, paint);
         break;
     }
   }

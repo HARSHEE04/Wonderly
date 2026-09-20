@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_theme.dart';
 import 'models.dart';
 
@@ -9,26 +10,76 @@ import 'models.dart';
 /// concept tags a matching `ChallengeTemplate` would carry.
 final SceneAnalysis mockSceneAnalysis = SceneAnalysis(
   colors: const [
-    Supply(label: 'Forest Green', kind: SwatchKind.color, color: AppColors.forestGreen, glyph: IconGlyph.circle),
-    Supply(label: 'Warm Yellow', kind: SwatchKind.color, color: AppColors.yellow, glyph: IconGlyph.circle),
-    Supply(label: 'Dusty Pink', kind: SwatchKind.color, color: AppColors.pink, glyph: IconGlyph.circle),
+    Supply(
+      label: 'Forest Green',
+      kind: SwatchKind.color,
+      color: AppColors.forestGreen,
+      glyph: IconGlyph.circle,
+    ),
+    Supply(
+      label: 'Warm Yellow',
+      kind: SwatchKind.color,
+      color: AppColors.yellow,
+      glyph: IconGlyph.circle,
+    ),
+    Supply(
+      label: 'Dusty Pink',
+      kind: SwatchKind.color,
+      color: AppColors.pink,
+      glyph: IconGlyph.circle,
+    ),
   ],
   shapes: const [
-    Supply(label: 'Circle', kind: SwatchKind.shape, color: AppColors.coral, glyph: IconGlyph.circle),
-    Supply(label: 'Rectangle', kind: SwatchKind.shape, color: AppColors.violet, glyph: IconGlyph.stripes),
+    Supply(
+      label: 'Circle',
+      kind: SwatchKind.shape,
+      color: AppColors.coral,
+      glyph: IconGlyph.circle,
+    ),
+    Supply(
+      label: 'Rectangle',
+      kind: SwatchKind.shape,
+      color: AppColors.violet,
+      glyph: IconGlyph.stripes,
+    ),
   ],
   lines: const [
-    Supply(label: 'Vertical Lines', kind: SwatchKind.line, color: AppColors.sky, glyph: IconGlyph.lines),
+    Supply(
+      label: 'Vertical Lines',
+      kind: SwatchKind.line,
+      color: AppColors.sky,
+      glyph: IconGlyph.lines,
+    ),
   ],
   textures: const [
-    Supply(label: 'Concrete', kind: SwatchKind.texture, color: Color(0xFFB9B3A6), glyph: IconGlyph.wave),
-    Supply(label: 'Leaves', kind: SwatchKind.texture, color: AppColors.forestGreen, glyph: IconGlyph.plant),
+    Supply(
+      label: 'Concrete',
+      kind: SwatchKind.texture,
+      color: Color(0xFFB9B3A6),
+      glyph: IconGlyph.wave,
+    ),
+    Supply(
+      label: 'Leaves',
+      kind: SwatchKind.texture,
+      color: AppColors.forestGreen,
+      glyph: IconGlyph.plant,
+    ),
   ],
   patterns: const [
-    Supply(label: 'Repetition', kind: SwatchKind.pattern, color: AppColors.pinkDeep, glyph: IconGlyph.stripes),
+    Supply(
+      label: 'Repetition',
+      kind: SwatchKind.pattern,
+      color: AppColors.pinkDeep,
+      glyph: IconGlyph.stripes,
+    ),
   ],
   objects: const [
-    Supply(label: 'Plant Pot', kind: SwatchKind.object, color: AppColors.forestGreen, glyph: IconGlyph.plant),
+    Supply(
+      label: 'Plant Pot',
+      kind: SwatchKind.object,
+      color: AppColors.forestGreen,
+      glyph: IconGlyph.plant,
+    ),
   ],
   concepts: const [
     ArtConcept(
@@ -72,14 +123,16 @@ final Map<String, LearningResource> mockLearningResources = {
     title: 'Composition in Art',
     url: 'tate.org.uk/art/student-resource/starting-out/composition',
     source: 'Tate',
-    summary: 'An introduction to composition and layout principles for visual work.',
+    summary:
+        'An introduction to composition and layout principles for visual work.',
   ),
   'perspective': const LearningResource(
     concept: 'perspective',
     title: 'Perspective in Drawing',
     url: 'khanacademy.org/humanities/art-architecture/artist-work/figure-drawing',
     source: 'Khan Academy',
-    summary: 'A practical explanation of perspective in drawing and composition.',
+    summary:
+        'A practical explanation of perspective in drawing and composition.',
   ),
 };
 
@@ -89,7 +142,7 @@ final Map<String, LearningResource> mockLearningResources = {
 const CreativeChallenge mockDailyChallenge = CreativeChallenge(
   title: 'Find a Symmetrical Object',
   instructions:
-      'Look around you for something whose two halves mirror each other — a window, a doorway, a leaf. '
+      'Look around you for something whose two halves mirror each other, like a window, a doorway, or a leaf. '
       'Sketch it on paper, in Procreate, or on an iPad, exaggerating the mirror line.',
   difficulty: 2,
   challengeType: 'composition',
@@ -98,61 +151,61 @@ const CreativeChallenge mockDailyChallenge = CreativeChallenge(
 CreativeChallenge challengeForConcept(ArtConcept concept) {
   return switch (concept.id) {
     'symmetry' => const CreativeChallenge(
-        title: 'Draw Its Mirror',
-        instructions:
-            'Sketch only the left half of a symmetrical object you can see, then fold your page (or flip a layer) '
-            'to complete the right half. Notice what feels different about the "perfect" half versus the hand-drawn one.',
-        difficulty: 2,
-        challengeType: 'pattern',
-        inspiredByConcept: 'Symmetry',
-      ),
+      title: 'Draw Its Mirror',
+      instructions:
+          'Sketch only the left half of a symmetrical object you can see, then fold your page (or flip a layer) '
+          'to complete the right half. Notice what feels different about the "perfect" half versus the hand-drawn one.',
+      difficulty: 2,
+      challengeType: 'pattern',
+      inspiredByConcept: 'Symmetry',
+    ),
     'composition' => const CreativeChallenge(
-        title: 'Frame the Intersection',
-        instructions:
-            'Find a spot where two or more lines in your surroundings cross — a window frame, a curb, a shadow. '
-            'Build your whole sketch around that intersection point instead of centering the obvious subject.',
-        difficulty: 2,
-        challengeType: 'composition',
-        inspiredByConcept: 'Composition',
-      ),
+      title: 'Frame the Intersection',
+      instructions:
+          'Find a spot where two or more lines in your surroundings cross, like a window frame, a curb, or a shadow. '
+          'Build your whole sketch around that intersection point instead of centering the obvious subject.',
+      difficulty: 2,
+      challengeType: 'composition',
+      inspiredByConcept: 'Composition',
+    ),
     'perspective' => const CreativeChallenge(
-        title: 'Chase the Vanishing Point',
-        instructions:
-            'Pick a row of things that recede into the distance — a fence, a hallway, a row of windows. '
-            'Sketch it letting every line converge toward a single point on the horizon.',
-        difficulty: 3,
-        challengeType: 'architecture',
-        inspiredByConcept: 'Perspective',
-      ),
+      title: 'Chase the Vanishing Point',
+      instructions:
+          'Pick a row of things that recede into the distance, like a fence, a hallway, or a row of windows. '
+          'Sketch it letting every line converge toward a single point on the horizon.',
+      difficulty: 3,
+      challengeType: 'architecture',
+      inspiredByConcept: 'Perspective',
+    ),
     _ => mockDailyChallenge,
   };
 }
 
 List<LibraryEntry> buildSeedLibrary() => [
-      LibraryEntry(
-        id: 'seed-1',
-        challengeTitle: 'Find a Symmetrical Object',
-        origin: 'Learn',
-        conceptTitle: 'Symmetry',
-        photoTint: AppColors.tealTint,
-        photoGlyph: IconGlyph.symmetry,
-        date: DateTime.now().subtract(const Duration(days: 2)),
-      ),
-      LibraryEntry(
-        id: 'seed-2',
-        challengeTitle: 'Sketch a Stranger\'s Shoes',
-        origin: 'Create',
-        photoTint: AppColors.marigoldTint,
-        photoGlyph: IconGlyph.spark,
-        date: DateTime.now().subtract(const Duration(days: 5)),
-      ),
-      LibraryEntry(
-        id: 'seed-3',
-        challengeTitle: 'Chase the Vanishing Point',
-        origin: 'Learn',
-        conceptTitle: 'Perspective',
-        photoTint: AppColors.brickTint,
-        photoGlyph: IconGlyph.perspective,
-        date: DateTime.now().subtract(const Duration(days: 8)),
-      ),
-    ];
+  LibraryEntry(
+    id: 'seed-1',
+    challengeTitle: 'Find a Symmetrical Object',
+    origin: 'Learn',
+    conceptTitle: 'Symmetry',
+    photoTint: AppColors.tealTint,
+    photoGlyph: IconGlyph.symmetry,
+    date: DateTime.now().subtract(const Duration(days: 2)),
+  ),
+  LibraryEntry(
+    id: 'seed-2',
+    challengeTitle: 'Sketch a Stranger\'s Shoes',
+    origin: 'Create',
+    photoTint: AppColors.marigoldTint,
+    photoGlyph: IconGlyph.spark,
+    date: DateTime.now().subtract(const Duration(days: 5)),
+  ),
+  LibraryEntry(
+    id: 'seed-3',
+    challengeTitle: 'Chase the Vanishing Point',
+    origin: 'Learn',
+    conceptTitle: 'Perspective',
+    photoTint: AppColors.brickTint,
+    photoGlyph: IconGlyph.perspective,
+    date: DateTime.now().subtract(const Duration(days: 8)),
+  ),
+];

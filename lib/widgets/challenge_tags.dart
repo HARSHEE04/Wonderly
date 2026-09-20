@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../data/models.dart';
 import '../theme/app_theme.dart';
 
@@ -35,7 +36,7 @@ class _Tag extends StatelessWidget {
         border: Border.all(color: AppColors.ink.withValues(alpha: 0.16)),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(label, style: monoLabel(fontSize: 9.5)),
+      child: Text(label, style: monoLabel(fontSize: 12)),
     );
   }
 }

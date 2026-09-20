@@ -16,6 +16,8 @@ class AtelierButton extends StatelessWidget {
   final Color outlineTextColor;
   final bool expand;
   final bool tape;
+  final Color? tapeColor;
+  final bool? tapeOnLeft;
 
   const AtelierButton({
     super.key,
@@ -28,6 +30,8 @@ class AtelierButton extends StatelessWidget {
     this.outlineTextColor = AppColors.ink,
     this.expand = true,
     this.tape = true,
+    this.tapeColor,
+    this.tapeOnLeft,
   });
 
   @override
@@ -78,6 +82,7 @@ class AtelierButton extends StatelessWidget {
 
     if (!tape) return pill;
 
+    final onLeft = tapeOnLeft ?? !outlined;
     return Padding(
       padding: const EdgeInsets.only(top: 11),
       child: Stack(
@@ -86,11 +91,13 @@ class AtelierButton extends StatelessWidget {
           pill,
           Positioned(
             top: -11,
-            left: outlined ? null : 18,
-            right: outlined ? 18 : null,
+            left: onLeft ? 18 : null,
+            right: onLeft ? null : 18,
             child: WashiTape(
-              color: outlined ? AppColors.sky : AppColors.coral,
-              angle: outlined ? 0.14 : -0.16,
+              color:
+                  tapeColor ??
+                  (outlined ? AppColors.tapeBlue : AppColors.tapePink),
+              angle: onLeft ? -0.16 : 0.14,
             ),
           ),
         ],

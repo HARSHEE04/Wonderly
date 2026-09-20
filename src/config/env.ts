@@ -9,5 +9,6 @@ export const env = {
   firecrawlApiKey: process.env.FIRECRAWL_API_KEY ?? '',
   openaiApiKey: process.env.OPENAI_API_KEY ?? '',
   openaiModel: process.env.OPENAI_MODEL ?? 'gpt-4.1-mini',
+  learningOpenaiModel: process.env.OPENAI_LEARNING_MODEL ?? 'gpt-4o-mini',
   corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:3000'
 };

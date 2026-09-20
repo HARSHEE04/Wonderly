@@ -34,7 +34,7 @@ class SavedScreen extends StatelessWidget {
                   const SizedBox(height: 10),
                   Text(
                     'Another page in your journey.',
-                    style: editorialDisplay(fontSize: 24),
+                    style: editorialDisplay(fontSize: 26),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 36),

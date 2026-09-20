@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
@@ -47,7 +48,9 @@ class ApiClient {
   /// reaches a backend running on the host machine directly.
   static String get baseUrl {
     if (_override.isNotEmpty) return _override;
-    final host = kIsWeb ? (Uri.base.host.isNotEmpty ? Uri.base.host : 'localhost') : 'localhost';
+    final host = kIsWeb
+        ? (Uri.base.host.isNotEmpty ? Uri.base.host : 'localhost')
+        : 'localhost';
     return 'http://$host:4000';
   }
 
@@ -56,15 +59,25 @@ class ApiClient {
   Map<String, dynamic> _unwrap(http.Response res) {
     final decoded = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode >= 400 || decoded['success'] == false) {
-      final message = (decoded['error'] as Map?)?['message']?.toString() ?? 'Request failed (${res.statusCode})';
+      final message =
+          (decoded['error'] as Map?)?['message']?.toString() ??
+          'Request failed (${res.statusCode})';
       throw ApiException(message);
     }
     return decoded;
   }
 
-  Future<Map<String, dynamic>> _post(String path, Map<String, dynamic> body, {Duration timeout = const Duration(seconds: 8)}) async {
+  Future<Map<String, dynamic>> _post(
+    String path,
+    Map<String, dynamic> body, {
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
     final res = await http
-        .post(_uri(path), headers: const {'Content-Type': 'application/json'}, body: jsonEncode(body))
+        .post(
+          _uri(path),
+          headers: const {'Content-Type': 'application/json'},
+          body: jsonEncode(body),
+        )
         .timeout(timeout);
     final decoded = _unwrap(res);
     return decoded['data'] as Map<String, dynamic>? ?? {};
@@ -76,7 +89,10 @@ class ApiClient {
     return decoded['data'] as List<dynamic>? ?? [];
   }
 
-  Future<String> createSession({required String userId, required String mode}) async {
+  Future<String> createSession({
+    required String userId,
+    required String mode,
+  }) async {
     final data = await _post('/api/sessions', {'userId': userId, 'mode': mode});
     return data['id'] as String;
   }
@@ -110,6 +126,17 @@ class ApiClient {
   Future<List<Map<String, dynamic>>> getChallengeHistory(String userId) async {
     final list = await _getList('/api/users/$userId/challenge-instances');
     return list.cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>?> recommendChallenge({
+    required Map<String, dynamic> scene,
+    required String userId,
+  }) async {
+    final data = await _post('/api/challenges/recommend', {
+      'sceneAnalysis': scene,
+      'userId': userId,
+    });
+    return data['decision'] as Map<String, dynamic>?;
   }
 
   Future<void> completeSession({

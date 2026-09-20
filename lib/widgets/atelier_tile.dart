@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../data/models.dart';
 import '../theme/app_theme.dart';
 import 'line_icon.dart';
@@ -11,7 +12,12 @@ class AtelierTile extends StatelessWidget {
   final VoidCallback? onTap;
   final bool selected;
 
-  const AtelierTile({super.key, required this.supply, this.onTap, this.selected = false});
+  const AtelierTile({
+    super.key,
+    required this.supply,
+    this.onTap,
+    this.selected = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +27,9 @@ class AtelierTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.paperTile,
           borderRadius: BorderRadius.circular(16),
-          border: selected ? Border.all(color: AppColors.ink, width: 1.4) : null,
+          border: selected
+              ? Border.all(color: AppColors.ink, width: 1.4)
+              : null,
         ),
         child: Stack(
           children: [
@@ -31,7 +39,10 @@ class AtelierTile extends StatelessWidget {
               child: Container(
                 width: 6,
                 height: 6,
-                decoration: BoxDecoration(color: supply.color, shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: supply.color,
+                  shape: BoxShape.circle,
+                ),
               ),
             ),
             Center(
@@ -43,7 +54,7 @@ class AtelierTile extends StatelessWidget {
                   Text(
                     supply.label.toLowerCase(),
                     style: const TextStyle(
-                      fontSize: 9,
+                      fontSize: 10,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.4,
                       color: AppColors.inkSoft,

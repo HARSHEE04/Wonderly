@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_theme.dart';
 
 /// Ink-bordered circular icon button used for back/close/undo actions on
@@ -29,7 +30,11 @@ class CircleIconButton extends StatelessWidget {
           color: filled ? AppColors.ink : AppColors.paper,
           border: Border.all(color: AppColors.ink, width: 1.6),
         ),
-        child: Icon(icon, color: filled ? AppColors.paper : AppColors.ink, size: size * 0.42),
+        child: Icon(
+          icon,
+          color: filled ? AppColors.paper : AppColors.ink,
+          size: size * 0.42,
+        ),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_theme.dart';
 
 /// Thin corner brackets over a camera-style panel — the restrained
@@ -31,7 +32,12 @@ class _CornerPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
     const len = 18.0;
-    final corners = [Offset.zero, Offset(size.width, 0), Offset(0, size.height), Offset(size.width, size.height)];
+    final corners = [
+      Offset.zero,
+      Offset(size.width, 0),
+      Offset(0, size.height),
+      Offset(size.width, size.height),
+    ];
     for (final c in corners) {
       final dx = c.dx == 0 ? 1.0 : -1.0;
       final dy = c.dy == 0 ? 1.0 : -1.0;
@@ -41,5 +47,6 @@ class _CornerPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _CornerPainter oldDelegate) => oldDelegate.color != color;
+  bool shouldRepaint(covariant _CornerPainter oldDelegate) =>
+      oldDelegate.color != color;
 }

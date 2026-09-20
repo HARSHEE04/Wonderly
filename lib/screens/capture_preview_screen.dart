@@ -86,8 +86,8 @@ class CapturePreviewScreen extends StatelessWidget {
                           left: 28,
                           child: WashiTape(
                             color: origin == 'Create'
-                                ? AppColors.coral
-                                : AppColors.sky,
+                                ? AppColors.tapePurple
+                                : AppColors.tapeGreen,
                             angle: -0.12,
                             width: 20,
                             height: 42,
@@ -99,7 +99,7 @@ class CapturePreviewScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   Text(
                     challenge.title,
-                    style: editorialDisplay(fontSize: 18, color: AppColors.ink),
+                    style: editorialDisplay(fontSize: 20, color: AppColors.ink),
                   ),
                   const SizedBox(height: 20),
                   Row(

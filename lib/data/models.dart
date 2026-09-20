@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
 
 /// Which hand-drawn line icon represents a swatch, concept, or mock photo.
-enum IconGlyph { circle, plant, lines, wave, stripes, spark, symmetry, palette, camera, perspective }
+enum IconGlyph {
+  circle,
+  plant,
+  lines,
+  wave,
+  stripes,
+  spark,
+  symmetry,
+  palette,
+  camera,
+  perspective,
+  compass,
+  cloud,
+}
 
 /// Mirrors the backend's `IngredientType` union (`src/core/types/visual.ts`),
 /// minus `semanticObject` which is spelled out as [SwatchKind.object] here.
@@ -87,7 +100,14 @@ class SceneAnalysis {
     required this.concepts,
   });
 
-  List<Supply> get allSwatches => [...colors, ...shapes, ...lines, ...textures, ...patterns, ...objects];
+  List<Supply> get allSwatches => [
+    ...colors,
+    ...shapes,
+    ...lines,
+    ...textures,
+    ...patterns,
+    ...objects,
+  ];
 }
 
 /// Converts this mocked scene into the JSON shape the backend's
@@ -96,16 +116,20 @@ class SceneAnalysis {
 /// `/api/challenges/recommend` until a real CV pipeline replaces the mock.
 extension SceneAnalysisApi on SceneAnalysis {
   Map<String, dynamic> toApiJson() {
-    List<Map<String, dynamic>> features(List<Supply> supplies, String prefix, {String? orientation}) => [
-          for (var i = 0; i < supplies.length; i++)
-            {
-              'id': '$prefix-$i',
-              'label': supplies[i].label,
-              if (prefix == 'color') 'name': supplies[i].label,
-              if (prefix == 'color') 'hex': _hex(supplies[i].color),
-              if (orientation != null) 'orientation': orientation,
-            },
-        ];
+    List<Map<String, dynamic>> features(
+      List<Supply> supplies,
+      String prefix, {
+      String? orientation,
+    }) => [
+      for (var i = 0; i < supplies.length; i++)
+        {
+          'id': '$prefix-$i',
+          'label': supplies[i].label,
+          if (prefix == 'color') 'name': supplies[i].label,
+          if (prefix == 'color') 'hex': _hex(supplies[i].color),
+          if (orientation != null) 'orientation': orientation,
+        },
+    ];
 
     return {
       'colors': features(colors, 'color'),
@@ -117,7 +141,8 @@ extension SceneAnalysisApi on SceneAnalysis {
     };
   }
 
-  String _hex(Color c) => '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
+  String _hex(Color c) =>
+      '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
 }
 
 /// Artist-facing challenge returned by the backend, or authored Learn copy.
@@ -185,6 +210,7 @@ class LibraryEntry {
   final Color photoTint;
   final IconGlyph photoGlyph;
   final DateTime date;
+
   /// Backend `Artwork.id` (`src/database/repository.ts`) when this entry was
   /// synced from `GET /api/users/:userId/artworks`; null for local-only or
   /// seed entries. Used to dedupe repeated syncs.

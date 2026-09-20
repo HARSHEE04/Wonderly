@@ -45,6 +45,24 @@ class AppColors {
   static const tealTint = Color(0xFFDCEEEE);
   static const marigoldTint = Color(0xFFFBEAC9);
   static const brickTint = Color(0xFFF8DEDD);
+
+  // A colorful pastel "washi tape" palette — deliberately more saturated
+  // than the paper background so tape always reads as tape, never blends
+  // in with it. No yellow here on purpose: yellow-on-ink is what Flutter's
+  // debug overflow banner looks like, and tape must never be mistaken for
+  // that warning stripe.
+  static const tapePink = Color(0xFFF3A6C8);
+  static const tapePurple = Color(0xFFC2A2EA);
+  static const tapeGreen = Color(0xFF9BDFB3);
+  static const tapeBlue = Color(0xFF95CDEF);
+
+  static const tapePalette = [tapePink, tapePurple, tapeGreen, tapeBlue];
+
+  // A physical Post-it yellow, for the StickyNote card — distinct from the
+  // brighter button `yellow`, plus a slightly deeper shade for its folded
+  // corner.
+  static const stickyNote = Color(0xFFFBEFC0);
+  static const stickyNoteFold = Color(0xFFECDA9C);
 }
 
 class AppGradients {
@@ -165,15 +183,24 @@ TextTheme inkTextTheme(BuildContext context) =>
 
 /// Hand-lettered display face used on the paper/sketchbook Home screen.
 TextStyle sketchDisplay({double fontSize = 40, Color color = AppColors.ink}) =>
-    GoogleFonts.caveat(fontSize: fontSize, fontWeight: FontWeight.w700, color: color, height: 1.0);
+    GoogleFonts.caveat(
+      fontSize: fontSize,
+      fontWeight: FontWeight.w700,
+      color: color,
+      height: 1.0,
+    );
 
 /// Warm humanist body/label face paired with [sketchDisplay].
 TextStyle sketchBody({
-  double fontSize = 14,
+  double fontSize = 16,
   FontWeight weight = FontWeight.w400,
   Color color = AppColors.inkSoft,
-}) =>
-    GoogleFonts.karla(fontSize: fontSize, fontWeight: weight, color: color, height: 1.4);
+}) => GoogleFonts.karla(
+  fontSize: fontSize,
+  fontWeight: weight,
+  color: color,
+  height: 1.4,
+);
 
 /// Confident editorial display face for headlines — the "Archivo" register
 /// used everywhere that isn't the one handwritten line per screen.
@@ -181,13 +208,22 @@ TextStyle editorialDisplay({
   double fontSize = 28,
   FontWeight weight = FontWeight.w800,
   Color color = AppColors.ink,
-}) =>
-    GoogleFonts.archivo(fontSize: fontSize, fontWeight: weight, color: color, height: 1.05, letterSpacing: -0.4);
+}) => GoogleFonts.archivo(
+  fontSize: fontSize,
+  fontWeight: weight,
+  color: color,
+  height: 1.05,
+  letterSpacing: -0.4,
+);
 
 /// Small uppercase utility label (mono) — eyebrows, tags, timestamps.
 TextStyle monoLabel({
-  double fontSize = 10,
+  double fontSize = 12,
   Color color = AppColors.inkSoft,
   double letterSpacing = 1.2,
-}) =>
-    GoogleFonts.ibmPlexMono(fontSize: fontSize, fontWeight: FontWeight.w600, color: color, letterSpacing: letterSpacing);
+}) => GoogleFonts.ibmPlexMono(
+  fontSize: fontSize,
+  fontWeight: FontWeight.w600,
+  color: color,
+  letterSpacing: letterSpacing,
+);

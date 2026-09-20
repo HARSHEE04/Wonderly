@@ -30,7 +30,7 @@ class LearnConceptScreen extends StatelessWidget {
         children: [
           const Positioned.fill(child: PaperTexture()),
           SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 26),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,7 +43,7 @@ class LearnConceptScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   Text('we found', style: monoLabel(color: concept.accent)),
                   const SizedBox(height: 6),
-                  Text(concept.title, style: editorialDisplay(fontSize: 30)),
+                  Text(concept.title, style: editorialDisplay(fontSize: 32)),
                   const SizedBox(height: 18),
                   Center(
                     child: Container(
@@ -70,7 +70,7 @@ class LearnConceptScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Text(concept.blurb, style: sketchBody(fontSize: 14.5)),
+                  Text(concept.blurb, style: sketchBody(fontSize: 16.5)),
                   const SizedBox(height: 20),
                   if (resource != null) ...[
                     Text('from around the web', style: monoLabel()),
@@ -82,7 +82,9 @@ class LearnConceptScreen extends StatelessWidget {
                           top: -14,
                           right: 24,
                           child: WashiTape(
-                            color: concept.accent,
+                            color:
+                                AppColors.tapePalette[concept.id.hashCode %
+                                    AppColors.tapePalette.length],
                             angle: 0.16,
                             width: 16,
                             height: 34,
@@ -112,14 +114,14 @@ class LearnConceptScreen extends StatelessWidget {
                                 ),
                                 child: Text(
                                   resource.source.toLowerCase(),
-                                  style: monoLabel(fontSize: 9),
+                                  style: monoLabel(fontSize: 11),
                                 ),
                               ),
                               const SizedBox(height: 10),
                               Text(
                                 resource.title,
                                 style: sketchBody(
-                                  fontSize: 14.5,
+                                  fontSize: 16.5,
                                   weight: FontWeight.w700,
                                   color: AppColors.ink,
                                 ),
@@ -127,7 +129,7 @@ class LearnConceptScreen extends StatelessWidget {
                               const SizedBox(height: 6),
                               Text(
                                 resource.summary,
-                                style: sketchBody(fontSize: 12.5),
+                                style: sketchBody(fontSize: 14.5),
                               ),
                               const SizedBox(height: 10),
                               Row(
@@ -143,7 +145,7 @@ class LearnConceptScreen extends StatelessWidget {
                                       resource.url,
                                       overflow: TextOverflow.ellipsis,
                                       style: monoLabel(
-                                        fontSize: 9.5,
+                                        fontSize: 12,
                                         color: AppColors.ink.withValues(
                                           alpha: 0.5,
                                         ),
@@ -158,7 +160,7 @@ class LearnConceptScreen extends StatelessWidget {
                       ],
                     ),
                   ],
-                  const Spacer(),
+                  const SizedBox(height: 32),
                   AtelierButton(
                     label: 'try it',
                     fill: AppColors.ink,
