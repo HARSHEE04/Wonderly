@@ -20,7 +20,7 @@ export default function LearnModePage() {
         </h1>
         <div style={{ height: 6 }} />
         <p className="sketch-body" style={{ fontSize: 16 }}>
-          Choose how you&apos;d like to look.
+          Take a photo to begin.
         </p>
         <div style={{ height: 28 }} />
 
@@ -28,14 +28,7 @@ export default function LearnModePage() {
           glyph="camera"
           title="take a photo"
           subtitle="one still frame, analyzed once"
-          onTap={() => router.push("/learn/scan?mode=photo&origin=Learn")}
-        />
-        <div style={{ height: 14 }} />
-        <ModeRow
-          glyph="spark"
-          title="continuous scan"
-          subtitle="sweep the room as you go"
-          onTap={() => router.push("/learn/scan?mode=continuous&origin=Learn")}
+          onTap={() => router.push("/learn/scan")}
         />
       </div>
     </div>
@@ -48,7 +41,7 @@ function ModeRow({
   subtitle,
   onTap,
 }: {
-  glyph: "camera" | "spark";
+  glyph: "camera";
   title: string;
   subtitle: string;
   onTap: () => void;

@@ -6,8 +6,6 @@ export type CaptureResult = { blob: Blob; dataUrl: string };
 
 interface CameraCaptureProps {
   onCapture: (result: CaptureResult) => void;
-  /** Continuous mode auto-captures periodically; photo mode waits for a manual shutter tap. */
-  mode?: "photo" | "continuous";
 }
 
 /**
@@ -18,7 +16,7 @@ interface CameraCaptureProps {
  * Handles the exact error classes Phase 15 calls out: NotAllowedError,
  * NotFoundError, NotReadableError, OverconstrainedError, SecurityError.
  */
-export function CameraCapture({ onCapture, mode = "photo" }: CameraCaptureProps) {
+export function CameraCapture({ onCapture }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -196,7 +194,7 @@ export function CameraCapture({ onCapture, mode = "photo" }: CameraCaptureProps)
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        capture={mode === "photo" ? "environment" : undefined}
+        capture="environment"
         onChange={handleFileUpload}
         style={{ display: "none" }}
       />

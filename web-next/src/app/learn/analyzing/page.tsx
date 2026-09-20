@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createSession, generateLearningContent, demoUserId, ApiException } from "@/lib/apiClient";
 import { analyzeImage } from "@/lib/visionClient";
 import { flowState } from "@/lib/appState";
@@ -11,17 +11,7 @@ const STEPS = ["reading colors", "tracing shapes", "noticing patterns", "finding
 
 /** Ports lib/screens/learn_analyzing_screen.dart. Same pipeline for camera-captured and uploaded images. */
 export default function LearnAnalyzingPage() {
-  return (
-    <Suspense fallback={null}>
-      <LearnAnalyzingPageInner />
-    </Suspense>
-  );
-}
-
-function LearnAnalyzingPageInner() {
   const router = useRouter();
-  const params = useSearchParams();
-  const origin = params.get("origin") === "Create" ? "Create" : "Learn";
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const started = useRef(false);
@@ -37,7 +27,7 @@ function LearnAnalyzingPageInner() {
       if (!blob) throw new ApiException("No image was captured. Please try again.");
 
       const minimumDisplay = new Promise((resolve) => setTimeout(resolve, 1200));
-      const sessionId = await createSession(demoUserId, origin === "Create" ? "creative" : "learning");
+      const sessionId = await createSession(demoUserId, "learning");
       const vision = await analyzeImage(blob, sessionId);
       const learningContent = await generateLearningContent(sessionId);
 
@@ -51,11 +41,7 @@ function LearnAnalyzingPageInner() {
 
       await minimumDisplay;
 
-      if (origin === "Create") {
-        router.replace("/create/challenge");
-      } else {
-        router.replace("/learn/found");
-      }
+      router.replace("/learn/found");
     } catch (err) {
       console.error("LearnAnalyzingPage: analyze flow failed", err);
       setError(err instanceof ApiException && err.message ? err.message : "We couldn't analyze this image. Please try again.");

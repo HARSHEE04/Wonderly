@@ -45,17 +45,7 @@ export default function HomePage() {
         <div style={{ height: 90 }} />
 
         <AtelierButton
-          label="create"
-          fill="var(--yellow)"
-          textColor="var(--ink)"
-          tapeColor="var(--tape-pink)"
-          tapeOnLeft
-          fontSize={17}
-          onTap={() => router.push("/learn/scan?mode=continuous&origin=Create")}
-        />
-        <div style={{ height: 12 }} />
-        <AtelierButton
-          label="learn"
+          label="let's start learning!"
           fill="var(--yellow)"
           textColor="var(--ink)"
           tapeColor="var(--tape-blue)"
