@@ -55,6 +55,8 @@ export default function LearnChallengePage({ params }: { params: Promise<{ id: s
     router.push("/create/reminder");
   }
 
+  const instructionBullets = challenge ? splitInstructions(challenge.instructions) : [];
+
   return (
     <div className="page">
       <div className="page-content" style={{ paddingTop: 4 }}>
@@ -81,9 +83,19 @@ export default function LearnChallengePage({ params }: { params: Promise<{ id: s
               </h1>
             </div>
             <div style={{ height: 14 }} />
-            <p className="sketch-body" style={{ fontSize: 16.5 }}>
-              {challenge.instructions}
-            </p>
+            <ul
+              aria-label="practice steps"
+              style={{ display: "grid", gap: 12, listStyle: "none", padding: 0 }}
+            >
+              {instructionBullets.map((instruction, index) => (
+                <li key={`${instruction}-${index}`} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                  <span style={{ flex: "0 0 auto", marginTop: 2, display: "grid", placeItems: "center", width: 24, height: 24, borderRadius: "50%", background: "#fbe87d88" }}>
+                    <LineIcon glyph="spark" size={17} color="var(--pink-deep)" />
+                  </span>
+                  <span className="sketch-body" style={{ fontSize: 16.5 }}>{instruction}</span>
+                </li>
+              ))}
+            </ul>
             <div style={{ height: 16 }} />
             <ChallengeTags challenge={challenge} />
             <div style={{ height: 16 }} />
@@ -93,7 +105,7 @@ export default function LearnChallengePage({ params }: { params: Promise<{ id: s
           </div>
         )}
         <div style={{ height: 40 }} />
-        <p className="sketch-display" style={{ fontSize: 20, color: "var(--pink-deep)" }}>
+        <p className="sketch-display" style={{ width: "100%", textAlign: "center", fontSize: 20, color: "var(--pink-deep)" }}>
           there are no wrong answers here
         </p>
         <div style={{ height: 16 }} />
@@ -107,3 +119,10 @@ export default function LearnChallengePage({ params }: { params: Promise<{ id: s
   );
 }
 
+function splitInstructions(instructions: string): string[] {
+  const sentences = instructions
+    .match(/[^.!?]+[.!?]+|[^.!?]+$/g)
+    ?.map((sentence) => sentence.trim())
+    .filter(Boolean) ?? [];
+  return sentences.length ? sentences : [instructions];
+}

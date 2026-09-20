@@ -95,6 +95,8 @@ export function creativeChallengeFromInstance(json: Record<string, unknown>): Cr
   };
 }
 
+export type ArtworkVariant = "marigold" | "symmetry" | "blue-green" | "perspective";
+
 /** One saved piece in the user's Library — mirrors lib/data/models.dart's LibraryEntry. */
 export interface LibraryEntry {
   id: string;
@@ -104,6 +106,7 @@ export interface LibraryEntry {
   photoTint: string;
   photoGlyph: string;
   date: string;
+  artworkVariant?: ArtworkVariant;
   /** Data URL (base64) of the user's uploaded photo, if any. */
   photoDataUrl?: string;
   remoteId?: string;

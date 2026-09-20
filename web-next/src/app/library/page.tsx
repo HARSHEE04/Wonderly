@@ -3,6 +3,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { BackButton } from "@/components/AtelierButton";
+import { ArtworkPreview } from "@/components/ArtworkPreview";
 import { LineIcon } from "@/components/LineIcon";
 import { libraryStore } from "@/lib/appState";
 import { getArtworks, demoUserId } from "@/lib/apiClient";
@@ -92,6 +93,8 @@ function LibraryCard({ entry, tiltRight }: { entry: LibraryEntry; tiltRight: boo
           {entry.photoDataUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={entry.photoDataUrl} alt={entry.challengeTitle} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : entry.artworkVariant ? (
+            <ArtworkPreview variant={entry.artworkVariant} title={entry.challengeTitle} />
           ) : (
             <LineIcon glyph={entry.photoGlyph as never} size={44} color="rgba(20,22,58,0.6)" />
           )}

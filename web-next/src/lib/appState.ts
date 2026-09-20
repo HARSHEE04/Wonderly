@@ -29,6 +29,7 @@ const SEED_LIBRARY: LibraryEntry[] = [
     origin: 'Create',
     photoTint: '#FBEAC9',
     photoGlyph: 'spark',
+    artworkVariant: 'marigold',
     date: new Date(Date.now() - 86400000 * 3).toISOString(),
   },
   {
@@ -38,7 +39,27 @@ const SEED_LIBRARY: LibraryEntry[] = [
     conceptTitle: 'Symmetry',
     photoTint: '#DCEEEE',
     photoGlyph: 'symmetry',
+    artworkVariant: 'symmetry',
     date: new Date(Date.now() - 86400000 * 7).toISOString(),
+  },
+  {
+    id: 'seed-3',
+    challengeTitle: 'Blue + Green Shape Study',
+    origin: 'Create',
+    photoTint: '#DCEEEE',
+    photoGlyph: 'circle',
+    artworkVariant: 'blue-green',
+    date: new Date(Date.now() - 86400000 * 10).toISOString(),
+  },
+  {
+    id: 'seed-4',
+    challengeTitle: 'Lines Toward Home',
+    origin: 'Learn',
+    conceptTitle: 'Perspective',
+    photoTint: '#F8DEDD',
+    photoGlyph: 'perspective',
+    artworkVariant: 'perspective',
+    date: new Date(Date.now() - 86400000 * 14).toISOString(),
   },
 ];
 
@@ -60,7 +81,17 @@ class LibraryStore {
       const raw = window.localStorage.getItem(LIBRARY_STORAGE_KEY);
       if (!raw) return SEED_LIBRARY;
       const parsed = JSON.parse(raw) as LibraryEntry[];
-      return parsed.length ? parsed : SEED_LIBRARY;
+      if (!parsed.length) return SEED_LIBRARY;
+      const seededById = new Map(SEED_LIBRARY.map((entry) => [entry.id, entry]));
+      const existingIds = new Set(parsed.map((entry) => entry.id));
+      const updatedExisting = parsed.map((entry) => ({
+        ...entry,
+        artworkVariant: entry.artworkVariant ?? seededById.get(entry.id)?.artworkVariant,
+      }));
+      return [
+        ...updatedExisting,
+        ...SEED_LIBRARY.filter((entry) => !existingIds.has(entry.id)),
+      ];
     } catch {
       return SEED_LIBRARY;
     }
