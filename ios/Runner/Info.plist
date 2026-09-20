@@ -28,6 +28,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Wonderly uses your camera to scan your surroundings for colors, shapes, and patterns.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Wonderly needs access to your photos so you can upload a picture of your finished artwork.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
