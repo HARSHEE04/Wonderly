@@ -28,6 +28,9 @@ This repository now contains a clean Node.js + TypeScript backend that implement
 3. Start the backend in development mode:
    npm run dev
 
+
+   
+
 ## Environment variables
 
 See `.env.example`.
