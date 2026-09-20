@@ -1,0 +1,77 @@
+{
+  "colors": [
+    {
+      "id": "color-1",
+      "hex": "#FEFEFE"
+    },
+    {
+      "id": "color-2",
+      "hex": "#1C271F"
+    },
+    {
+      "id": "color-3",
+      "hex": "#A9C8A0"
+    },
+    {
+      "id": "color-4",
+      "hex": "#D6E8D0"
+    },
+    {
+      "id": "color-5",
+      "hex": "#637162"
+    }
+  ],
+  "shapes": [],
+  "textures": [
+    {
+      "id": "texture-1",
+      "label": "low visual detail"
+    },
+    {
+      "id": "texture-2",
+      "label": "low visual detail"
+    },
+    {
+      "id": "texture-3",
+      "label": "low visual detail"
+    },
+    {
+      "id": "texture-4",
+      "label": "low visual detail"
+    }
+  ],
+  "lines": [
+    {
+      "id": "line-1",
+      "label": "diagonal",
+      "orientation": "diagonal"
+    },
+    {
+      "id": "line-2",
+      "label": "diagonal",
+      "orientation": "diagonal"
+    },
+    {
+      "id": "line-3",
+      "label": "diagonal",
+      "orientation": "diagonal"
+    },
+    {
+      "id": "line-4",
+      "label": "diagonal",
+      "orientation": "diagonal"
+    },
+    {
+      "id": "line-5",
+      "label": "diagonal",
+      "orientation": "diagonal"
+    },
+    {
+      "id": "line-6",
+      "label": "diagonal",
+      "orientation": "diagonal"
+    }
+  ],
+  "patterns": [],
+  "semanticObjects": []
+}

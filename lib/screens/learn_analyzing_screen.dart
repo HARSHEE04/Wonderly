@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
@@ -103,9 +104,18 @@ class _LearnAnalyzingScreenState extends State<LearnAnalyzingScreen>
           risePageRoute(LearnFoundScreen(sessionResult: result)),
         );
       }
-    } catch (error) {
+    } catch (error, stackTrace) {
+      // Keep the technical detail in the developer logs only — the UI shows
+      // a plain-language message so raw exceptions (e.g. `ClientException:
+      // Failed to fetch`) never reach the user.
+      debugPrint('LearnAnalyzingScreen: analyze flow failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
       if (!mounted) return;
-      setState(() => _error = 'Could not analyze this photo.\n$error');
+      setState(
+        () => _error = error is ApiException && error.message.isNotEmpty
+            ? error.message
+            : "We couldn't analyze this image. Please try again.",
+      );
     } finally {
       _busy = false;
     }

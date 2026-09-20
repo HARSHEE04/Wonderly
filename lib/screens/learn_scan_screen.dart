@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
@@ -34,6 +35,10 @@ class _LearnScanScreenState extends State<LearnScanScreen>
   bool _capturing = false;
   CameraController? _controller;
   Future<void>? _initializeCamera;
+  /// Set when the camera couldn't be initialized (denied permission, no
+  /// hardware, browser blocked it, etc.) so the UI can show a real fallback
+  /// instead of silently rendering a blank preview area.
+  String? _cameraError;
 
   @override
   void initState() {
@@ -52,7 +57,13 @@ class _LearnScanScreenState extends State<LearnScanScreen>
   Future<void> _setUpCamera() async {
     try {
       final cameras = await availableCameras();
-      if (cameras.isEmpty) return;
+      if (cameras.isEmpty) {
+        debugPrint('LearnScanScreen: no cameras returned by availableCameras()');
+        if (mounted) {
+          setState(() => _cameraError = 'No camera was found on this device.');
+        }
+        return;
+      }
       final back = cameras.firstWhere(
         (c) => c.lensDirection == CameraLensDirection.back,
         orElse: () => cameras.first,
@@ -67,10 +78,22 @@ class _LearnScanScreenState extends State<LearnScanScreen>
         await controller.dispose();
         return;
       }
-      setState(() => _controller = controller);
-    } catch (_) {
-      // No camera available (e.g. denied permission) — falls back to the
-      // plain viewfinder panel below.
+      setState(() {
+        _controller = controller;
+        _cameraError = null;
+      });
+    } catch (error, stackTrace) {
+      // Surface the real cause (denied permission, no hardware, browser
+      // blocked getUserMedia, etc.) instead of silently leaving a blank
+      // preview — the UI falls back to the upload option below.
+      debugPrint('LearnScanScreen: camera initialization failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      if (mounted) {
+        setState(
+          () => _cameraError =
+              'Camera unavailable (permission denied or no camera found).',
+        );
+      }
     }
   }
 
@@ -307,17 +330,50 @@ class _LearnScanScreenState extends State<LearnScanScreen>
       future: _initializeCamera,
       builder: (context, snapshot) {
         final controller = _controller;
-        if (controller == null || !controller.value.isInitialized) {
+        if (controller != null && controller.value.isInitialized) {
+          final previewSize = controller.value.previewSize!;
+          return ClipRect(
+            child: FittedBox(
+              fit: BoxFit.cover,
+              child: SizedBox(
+                width: previewSize.height,
+                height: previewSize.width,
+                child: CameraPreview(controller),
+              ),
+            ),
+          );
+        }
+        // Still initializing — avoid flashing the "unavailable" message.
+        if (snapshot.connectionState != ConnectionState.done &&
+            _cameraError == null) {
           return const SizedBox.shrink();
         }
-        final previewSize = controller.value.previewSize!;
-        return ClipRect(
-          child: FittedBox(
-            fit: BoxFit.cover,
-            child: SizedBox(
-              width: previewSize.height,
-              height: previewSize.width,
-              child: CameraPreview(controller),
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                LineIcon(
+                  glyph: IconGlyph.spark,
+                  size: 40,
+                  color: AppColors.ink.withValues(alpha: 0.4),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  _cameraError ?? 'Camera unavailable.',
+                  textAlign: TextAlign.center,
+                  style: monoLabel(color: AppColors.inkSoft, fontSize: 12),
+                ),
+                if (widget.mode == ScanMode.photo) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    'Use the shutter button to choose a photo instead.',
+                    textAlign: TextAlign.center,
+                    style: monoLabel(color: AppColors.inkSoft, fontSize: 11),
+                  ),
+                ],
+              ],
             ),
           ),
         );

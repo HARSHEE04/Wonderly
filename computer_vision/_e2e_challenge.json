@@ -1,0 +1,37 @@
+{
+  "generationSource": "openai",
+  "reasonCodes": [
+    "eligible_for_composition",
+    "scene_matches_line"
+  ],
+  "id": "6aaf570ebd819cb89d03c435",
+  "userId": "demo-user",
+  "sessionId": "6aaf5706bf5ee75a24e87acc",
+  "templateId": "tpl-composition",
+  "challengeType": "composition",
+  "difficulty": 2,
+  "sourceMode": "standalone",
+  "title": "Create a Diagonal Line Composition",
+  "instructions": "Using diagonal lines, create a composition that emphasizes movement and direction. Play with the varying lengths and angles of diagonal lines to guide the viewer's eye across your artwork. Incorporate textures to add depth, and explore contrast between the light and dark colors provided. Think of how these elements can create dynamic tension or harmony in your piece.",
+  "focusConcepts": [
+    "composition",
+    "perspective",
+    "symmetry"
+  ],
+  "usedSceneFeatures": [
+    {
+      "type": "line",
+      "featureId": "line-1"
+    },
+    {
+      "type": "texture",
+      "featureId": "texture-1"
+    }
+  ],
+  "whyThisFitsScene": [
+    "The scene includes multiple diagonal lines that can be utilized for dynamic compositions.",
+    "Low visual detail textures can add depth and interest when combined with lines."
+  ],
+  "createdAt": "2026-09-20T03:46:22.242Z",
+  "updatedAt": "2026-09-20T03:46:22.242Z"
+}
