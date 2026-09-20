@@ -23,109 +23,87 @@ class HomeScreen extends StatelessWidget {
         children: [
           const Positioned.fill(child: PaperTexture()),
           SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 26),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: IntrinsicHeight(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 26),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const SizedBox(width: 38),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const SizedBox(width: 38),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const BrandMark(size: 26),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'wonderly',
-                                    style: monoLabel(
-                                      fontSize: 13,
-                                      color: AppColors.ink,
-                                      letterSpacing: 3,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              CircleIconButton(
-                                icon: Icons.grid_view_rounded,
-                                onTap: () => Navigator.of(context)
-                                    .push(risePageRoute(const LibraryScreen())),
-                                filled: false,
-                              ),
-                            ],
-                          ),
-                          const Spacer(flex: 3),
-                          Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'Start with wonder.',
-                                  textAlign: TextAlign.center,
-                                  style: sketchDisplay(
-                                    fontSize: 36,
-                                    color: AppColors.ink,
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    _ChecklistItem(
-                                      'Explore the world around you',
-                                    ),
-                                    SizedBox(height: 10),
-                                    _ChecklistItem('Discover something new'),
-                                    SizedBox(height: 10),
-                                    _ChecklistItem('Create'),
-                                  ],
-                                ),
-                              ],
+                          const BrandMark(size: 26),
+                          const SizedBox(width: 8),
+                          Text(
+                            'wonderly',
+                            style: monoLabel(
+                              fontSize: 13,
+                              color: AppColors.ink,
+                              letterSpacing: 3,
                             ),
                           ),
-                          const Spacer(flex: 4),
-                          AtelierButton(
-                            label: 'create',
-                            fill: AppColors.yellow,
-                            textColor: AppColors.ink,
-                            tapeColor: AppColors.tapePink,
-                            tapeOnLeft: true,
-                            onTap: () => Navigator.of(context).push(
-                              risePageRoute(
-                                const LearnScanScreen(
-                                  mode: ScanMode.photo,
-                                  origin: 'Create',
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          AtelierButton(
-                            label: 'learn',
-                            fill: AppColors.yellow,
-                            textColor: AppColors.ink,
-                            tapeColor: AppColors.tapeBlue,
-                            tapeOnLeft: false,
-                            onTap: () => Navigator.of(context)
-                                .push(risePageRoute(const LearnModeScreen())),
-                          ),
-                          const SizedBox(height: 28),
                         ],
+                      ),
+                      CircleIconButton(
+                        icon: Icons.grid_view_rounded,
+                        onTap: () =>
+                            Navigator.of(context)
+                                .push(risePageRoute(const LibraryScreen())),
+                        filled: false,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 90),
+                  Text(
+                    'Start with wonder.',
+                    textAlign: TextAlign.center,
+                    style: sketchDisplay(fontSize: 36, color: AppColors.ink),
+                  ),
+                  const SizedBox(height: 20),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _ChecklistItem('Explore the world around you'),
+                      SizedBox(height: 10),
+                      _ChecklistItem('Discover something new'),
+                      SizedBox(height: 10),
+                      _ChecklistItem('Create'),
+                    ],
+                  ),
+                  const SizedBox(height: 90),
+                  AtelierButton(
+                    label: 'create',
+                    fill: AppColors.yellow,
+                    textColor: AppColors.ink,
+                    tapeColor: AppColors.tapePink,
+                    tapeOnLeft: true,
+                    onTap: () => Navigator.of(context).push(
+                      risePageRoute(
+                        const LearnScanScreen(
+                          mode: ScanMode.photo,
+                          origin: 'Create',
+                        ),
                       ),
                     ),
                   ),
-                );
-              },
+                  const SizedBox(height: 12),
+                  AtelierButton(
+                    label: 'learn',
+                    fill: AppColors.yellow,
+                    textColor: AppColors.ink,
+                    tapeColor: AppColors.tapeBlue,
+                    tapeOnLeft: false,
+                    onTap: () =>
+                        Navigator.of(context)
+                            .push(risePageRoute(const LearnModeScreen())),
+                  ),
+                  const SizedBox(height: 28),
+                ],
+              ),
             ),
           ),
         ],
@@ -144,7 +122,7 @@ class _ChecklistItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           width: 24,
@@ -163,12 +141,17 @@ class _ChecklistItem extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 10),
-        Text(
-          label,
-          style: sketchBody(
-            fontSize: 16,
-            weight: FontWeight.w600,
-            color: AppColors.inkSoft,
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              label,
+              style: sketchBody(
+                fontSize: 16,
+                weight: FontWeight.w600,
+                color: AppColors.inkSoft,
+              ),
+            ),
           ),
         ),
       ],
