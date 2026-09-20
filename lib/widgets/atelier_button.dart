@@ -18,6 +18,7 @@ class AtelierButton extends StatelessWidget {
   final bool tape;
   final Color? tapeColor;
   final bool? tapeOnLeft;
+  final double fontSize;
 
   const AtelierButton({
     super.key,
@@ -32,6 +33,7 @@ class AtelierButton extends StatelessWidget {
     this.tape = true,
     this.tapeColor,
     this.tapeOnLeft,
+    this.fontSize = 15,
   });
 
   @override
@@ -70,7 +72,7 @@ class AtelierButton extends StatelessWidget {
             label.toLowerCase(),
             textAlign: TextAlign.center,
             style: GoogleFonts.karla(
-              fontSize: 15,
+              fontSize: fontSize,
               fontWeight: FontWeight.w600,
               letterSpacing: 1.1,
               color: outlined ? outlineTextColor : textColor,

@@ -7,7 +7,7 @@ void main() {
   runApp(const WonderlyApp());
 }
 
-class WonderlyApp extends StatelessWidget {
+class WonderlyApp extends Stat§§elessWidget {
   const WonderlyApp({super.key});
 
   @override

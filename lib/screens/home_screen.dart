@@ -1,4 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_theme.dart';
 import '../data/models.dart';
@@ -64,15 +67,24 @@ class HomeScreen extends StatelessWidget {
                     style: sketchDisplay(fontSize: 36, color: AppColors.ink),
                   ),
                   const SizedBox(height: 20),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _ChecklistItem('Explore the world around you'),
-                      SizedBox(height: 10),
-                      _ChecklistItem('Discover something new'),
-                      SizedBox(height: 10),
-                      _ChecklistItem('Create'),
-                    ],
+                  const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _ChecklistItem(
+                          'Explore the world around you',
+                          rotationDegrees: -1.4,
+                        ),
+                        SizedBox(height: 14),
+                        _ChecklistItem(
+                          'Discover something new',
+                          rotationDegrees: 1.6,
+                        ),
+                        SizedBox(height: 14),
+                        _ChecklistItem('Create', rotationDegrees: -0.7),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 90),
                   AtelierButton(
@@ -81,6 +93,7 @@ class HomeScreen extends StatelessWidget {
                     textColor: AppColors.ink,
                     tapeColor: AppColors.tapePink,
                     tapeOnLeft: true,
+                    fontSize: 17,
                     onTap: () => Navigator.of(context).push(
                       risePageRoute(
                         const LearnScanScreen(
@@ -97,6 +110,7 @@ class HomeScreen extends StatelessWidget {
                     textColor: AppColors.ink,
                     tapeColor: AppColors.tapeBlue,
                     tapeOnLeft: false,
+                    fontSize: 17,
                     onTap: () =>
                         Navigator.of(context)
                             .push(risePageRoute(const LearnModeScreen())),
@@ -112,49 +126,94 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-/// One row of the onboarding checklist, a small squared checkbox holding a
-/// hand-drawn spark instead of a plain checkmark, paired with a short line
-/// of the "explore, discover, create" promise.
-class _ChecklistItem extends StatelessWidget {
+/// One row of the onboarding checklist, rendered as a small paper "sticker"
+/// card — a hand-drawn spark checkbox paired with a short line of the
+/// "explore, discover, create" promise. Each card sits at a slight,
+/// per-item rotation like something taped onto the page, and straightens
+/// out with a deeper shadow on press for a tactile, physical feel.
+class _ChecklistItem extends StatefulWidget {
   final String label;
-  const _ChecklistItem(this.label);
+  final double rotationDegrees;
+  const _ChecklistItem(this.label, {this.rotationDegrees = 0});
+
+  @override
+  State<_ChecklistItem> createState() => _ChecklistItemState();
+}
+
+class _ChecklistItemState extends State<_ChecklistItem> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (_pressed == value) return;
+    setState(() => _pressed = value);
+    if (value) HapticFeedback.selectionClick();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-            color: AppColors.paperLight,
-            border: Border.all(color: AppColors.ink, width: 1.4),
-            borderRadius: BorderRadius.circular(6),
+    final restAngle = widget.rotationDegrees * math.pi / 180;
+    return GestureDetector(
+      onTapDown: (_) => _setPressed(true),
+      onTapUp: (_) => _setPressed(false),
+      onTapCancel: () => _setPressed(false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        transformAlignment: Alignment.center,
+        transform: Matrix4.identity()
+          ..rotateZ(_pressed ? 0 : restAngle)
+          ..scaleByDouble(
+            _pressed ? 1.03 : 1.0,
+            _pressed ? 1.03 : 1.0,
+            1.0,
+            1.0,
           ),
-          child: Center(
-            child: LineIcon(
-              glyph: IconGlyph.spark,
-              size: 13,
-              color: AppColors.ink,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.paperLight,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.ink.withValues(alpha: 0.1),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.ink.withValues(alpha: _pressed ? 0.22 : 0.1),
+              blurRadius: _pressed ? 18 : 7,
+              offset: Offset(0, _pressed ? 10 : 3),
             ),
-          ),
+          ],
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 2),
-            child: Text(
-              label,
-              style: sketchBody(
-                fontSize: 16,
-                weight: FontWeight.w600,
-                color: AppColors.inkSoft,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: AppColors.paper,
+                border: Border.all(color: AppColors.ink, width: 1.4),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Center(
+                child: LineIcon(
+                  glyph: IconGlyph.spark,
+                  size: 13,
+                  color: AppColors.ink,
+                ),
               ),
             ),
-          ),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                widget.label,
+                style: sketchDisplay(fontSize: 21, color: AppColors.inkSoft),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
