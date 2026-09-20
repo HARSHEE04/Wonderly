@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { BackButton } from "@/components/AtelierButton";
 import { LineIcon } from "@/components/LineIcon";
+import { ReadAloudButton } from "@/components/ReadAloudButton";
 import { flowState } from "@/lib/appState";
 import type { LearningElement } from "@/lib/types";
 
@@ -23,6 +24,18 @@ const ACCENT_FOR: Record<string, string> = {
 export default function LearnFoundPage() {
   const router = useRouter();
   const learningContent = flowState.learnSessionResult?.learningContent;
+  const spokenText = learningContent
+    ? [
+        learningContent.summary,
+        learningContent.elements.length
+          ? `We found ${learningContent.elements.length} concepts to explore: ${learningContent.elements
+              .map((e) => e.name)
+              .join(", ")}.`
+          : "",
+      ]
+        .filter(Boolean)
+        .join(" ")
+    : "";
 
   return (
     <div className="page">
@@ -36,6 +49,12 @@ export default function LearnFoundPage() {
         <p className="sketch-body" style={{ fontSize: 15 }}>
           {learningContent?.summary ?? "Learning content is unavailable. Go back and scan again."}
         </p>
+        {spokenText && (
+          <>
+            <div style={{ height: 14 }} />
+            <ReadAloudButton text={spokenText} />
+          </>
+        )}
         <div style={{ height: 22 }} />
         <span className="mono-label">concepts to explore</span>
         <div style={{ height: 12 }} />

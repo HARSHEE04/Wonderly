@@ -4,6 +4,7 @@ import { use } from "react";
 import { useRouter } from "next/navigation";
 import { BackButton, AtelierButton } from "@/components/AtelierButton";
 import { LineIcon } from "@/components/LineIcon";
+import { ReadAloudButton } from "@/components/ReadAloudButton";
 import { flowState } from "@/lib/appState";
 
 const GLYPH_FOR: Record<string, "palette" | "lines" | "wave" | "stripes" | "circle"> = {
@@ -41,6 +42,7 @@ export default function LearnConceptPage({ params }: { params: Promise<{ id: str
 
   const accent = ACCENT_FOR[element.category] ?? "var(--violet)";
   const glyph = GLYPH_FOR[element.category] ?? "circle";
+  const spokenText = `${element.name}. ${element.description} ${element.artisticUse} ${element.effect} ${element.howToUse}`;
 
   return (
     <div className="page">
@@ -74,6 +76,8 @@ export default function LearnConceptPage({ params }: { params: Promise<{ id: str
         <p className="sketch-body" style={{ fontSize: 16.5 }}>
           {element.description}
         </p>
+        <div style={{ height: 14 }} />
+        <ReadAloudButton text={spokenText} />
         <div style={{ height: 20 }} />
         <span className="mono-label">how artists use it</span>
         <div style={{ height: 16 }} />

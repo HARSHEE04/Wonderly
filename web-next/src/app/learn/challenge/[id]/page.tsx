@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { BackButton, AtelierButton } from "@/components/AtelierButton";
 import { ChallengeTags } from "@/components/ChallengeTags";
 import { LineIcon } from "@/components/LineIcon";
+import { ReadAloudButton } from "@/components/ReadAloudButton";
 import { generateCreativeChallenge } from "@/lib/apiClient";
 import { flowState } from "@/lib/appState";
 import type { CreativeChallenge } from "@/lib/types";
@@ -85,6 +86,10 @@ export default function LearnChallengePage({ params }: { params: Promise<{ id: s
             </p>
             <div style={{ height: 16 }} />
             <ChallengeTags challenge={challenge} />
+            <div style={{ height: 16 }} />
+            <ReadAloudButton
+              text={`Your creative challenge is ${challenge.title}. ${challenge.instructions} This is a difficulty ${challenge.difficulty} out of 5, ${challenge.challengeType} challenge.`}
+            />
           </div>
         )}
         <div style={{ height: 40 }} />
