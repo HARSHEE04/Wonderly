@@ -3,7 +3,7 @@ import cors from 'cors';
 import { env } from './config/env.js';
 import { isMongoConnected } from './database/mongo.js';
 import { ApiError, normalizeError } from './core/errors.js';
-import { challengeInstanceCreateSchema, sceneAnalysisSchema } from './api/validation/schemas.js';
+import { challengeInstanceCreateSchema, creativeChallengeRequestSchema, sceneAnalysisSchema } from './api/validation/schemas.js';
 import {
   createSession,
   createChallengeInstance,
@@ -92,7 +92,8 @@ app.post('/api/sessions/:sessionId/challenge-instance', async (req, res) => {
 
 app.post('/api/sessions/:sessionId/creative-challenge', async (req, res) => {
   try {
-    const instance = await getOrGenerateCreativeChallenge(req.params.sessionId);
+    const input = creativeChallengeRequestSchema.parse(req.body ?? {});
+    const instance = await getOrGenerateCreativeChallenge(req.params.sessionId, input.learningContext);
     res.json({ success: true, data: instance });
   } catch (error) {
     const normalized = normalizeError(error);
@@ -209,7 +210,12 @@ app.get('/api/mock-scenes/:sceneName', (req, res) => {
 
 app.post('/api/learning/content', async (req, res) => {
   try {
-    const parsed = sceneAnalysisSchema.parse(req.body.sceneAnalysis ?? req.body);
+    const sessionId = typeof req.body?.sessionId === 'string' ? req.body.sessionId : undefined;
+    const session = sessionId ? await getSession(sessionId) : undefined;
+    if (sessionId && !session?.sceneAnalysis) {
+      throw new ApiError('Learning session scene not found', 404);
+    }
+    const parsed = sceneAnalysisSchema.parse(session?.sceneAnalysis ?? req.body.sceneAnalysis ?? req.body);
     validateSceneAnalysis(parsed);
     const content = await generateLearningContent(parsed);
     res.json({ success: true, data: content });

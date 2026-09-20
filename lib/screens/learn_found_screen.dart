@@ -18,6 +18,7 @@ class LearnFoundScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scene = mockSceneAnalysis;
+    final learningContent = sessionResult?.learningContent;
     return Scaffold(
       backgroundColor: AppColors.paper,
       body: Stack(
@@ -59,7 +60,8 @@ class LearnFoundScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          '${scene.allSwatches.length} elements, ${scene.concepts.length} concepts worth exploring',
+                          learningContent?.summary ??
+                              'Learning content is unavailable. Go back and scan again.',
                           style: sketchBody(fontSize: 15),
                         ),
                         const SizedBox(height: 22),
@@ -77,13 +79,13 @@ class LearnFoundScreen extends StatelessWidget {
                         const SizedBox(height: 28),
                         Text('concepts to explore', style: monoLabel()),
                         const SizedBox(height: 12),
-                        for (final concept in scene.concepts) ...[
+                        for (final element in learningContent?.elements ?? const <LearningElement>[]) ...[
                           _ConceptRow(
-                            concept: concept,
+                            element: element,
                             onTap: () => Navigator.of(context).push(
                               risePageRoute(
                                 LearnConceptScreen(
-                                  concept: concept,
+                                  element: element,
                                   sessionResult: sessionResult,
                                 ),
                               ),
@@ -105,9 +107,9 @@ class LearnFoundScreen extends StatelessWidget {
 }
 
 class _ConceptRow extends StatelessWidget {
-  final ArtConcept concept;
+  final LearningElement element;
   final VoidCallback onTap;
-  const _ConceptRow({required this.concept, required this.onTap});
+  const _ConceptRow({required this.element, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -124,14 +126,14 @@ class _ConceptRow extends StatelessWidget {
           ),
           child: Row(
             children: [
-              LineIcon(glyph: concept.glyph, size: 28, color: concept.accent),
+              LineIcon(glyph: _glyphFor(element.category), size: 28, color: _accentFor(element.category)),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      concept.title,
+                      element.name,
                       style: sketchBody(
                         fontSize: 16,
                         weight: FontWeight.w700,
@@ -139,7 +141,7 @@ class _ConceptRow extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Text(concept.blurb, style: sketchBody(fontSize: 13.5)),
+                    Text(element.description, style: sketchBody(fontSize: 13.5)),
                   ],
                 ),
               ),
@@ -155,3 +157,19 @@ class _ConceptRow extends StatelessWidget {
     );
   }
 }
+
+IconGlyph _glyphFor(String category) => switch (category) {
+      'color' => IconGlyph.palette,
+      'line' => IconGlyph.lines,
+      'texture' => IconGlyph.wave,
+      'pattern' => IconGlyph.stripes,
+      _ => IconGlyph.circle,
+    };
+
+Color _accentFor(String category) => switch (category) {
+      'color' => AppColors.coral,
+      'line' => AppColors.sky,
+      'texture' => AppColors.forestGreen,
+      'pattern' => AppColors.pinkDeep,
+      _ => AppColors.violet,
+    };

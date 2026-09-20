@@ -77,6 +77,50 @@ class LearningResource {
   });
 }
 
+class LearningElement {
+  final String category;
+  final String name;
+  final String description;
+  final String artisticUse;
+  final String effect;
+  final String howToUse;
+  final String activity;
+
+  const LearningElement({
+    required this.category,
+    required this.name,
+    required this.description,
+    required this.artisticUse,
+    required this.effect,
+    required this.howToUse,
+    required this.activity,
+  });
+
+  factory LearningElement.fromJson(Map<String, dynamic> json) => LearningElement(
+        category: json['category'] as String,
+        name: json['name'] as String,
+        description: json['description'] as String,
+        artisticUse: json['artisticUse'] as String,
+        effect: json['effect'] as String,
+        howToUse: json['howToUse'] as String,
+        activity: json['activity'] as String,
+      );
+}
+
+class LearningContent {
+  final String summary;
+  final List<LearningElement> elements;
+
+  const LearningContent({required this.summary, required this.elements});
+
+  factory LearningContent.fromJson(Map<String, dynamic> json) => LearningContent(
+        summary: json['summary'] as String,
+        elements: (json['elements'] as List)
+            .map((item) => LearningElement.fromJson(item as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
 /// Placeholder for the teammate-owned CV/Gemini output. Frontend only reads
 /// this shape; the real data will come from another teammate's pipeline.
 /// Field names match `SceneAnalysis` in `src/core/types/visual.ts` exactly

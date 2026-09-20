@@ -12,8 +12,8 @@ const scene = {
   textures: [], lines: [], patterns: [], semanticObjects: []
 };
 
-async function sessionFor(userId: string) {
-  const created = await request(app).post('/api/sessions').send({ userId, mode: 'creative' });
+async function sessionFor(userId: string, mode = 'creative') {
+  const created = await request(app).post('/api/sessions').send({ userId, mode });
   const sessionId = created.body.data.id;
   const attached = await request(app).post(`/api/sessions/${sessionId}/scene-analysis`).send(scene);
   expect(attached.status).toBe(200);
@@ -67,6 +67,43 @@ describe('Creative generation', () => {
     expect(context.selectedSceneFeatures.semanticObjects).toEqual([]);
     expect(context.challengeDecision).toEqual(decision);
     await request(app).post(`/api/sessions/${sessionId}/creative-challenge`).send({});
+    expect(parse).toHaveBeenCalledTimes(1);
+  });
+
+  it('generates and persists a learning-context challenge from the same session scene', async () => {
+    env.openaiApiKey = 'test-key';
+    const { sessionId, decision } = await sessionFor('learning-creative', 'learning');
+    const learningContext = {
+      focusConcept: 'color contrast',
+      learningInsight: 'Contrasting colors create separation and emphasis.',
+      learningEvidence: ['Place the supplied green beside a lighter color.', 'Make one focal area stand out.']
+    };
+    const copy = {
+      title: 'Contrast the Circle',
+      instructions: 'Practice color contrast by making the supplied circle stand out against green.',
+      usedSceneFeatures: [{ type: 'color', featureId: 'green' }, { type: 'shape', featureId: 'circle' }],
+      whyThisFitsScene: ['Uses the supplied green and circle to practice contrast.']
+    };
+    parse.mockResolvedValue({ output_parsed: copy });
+
+    const generated = await request(app)
+      .post(`/api/sessions/${sessionId}/creative-challenge`)
+      .send({ learningContext });
+
+    expect(generated.status).toBe(200);
+    expect(generated.body.data).toMatchObject({
+      ...copy,
+      sourceMode: 'learning',
+      learningContext,
+      focusConcepts: ['color contrast'],
+      templateId: decision.challengeTemplateId
+    });
+    const context = JSON.parse(parse.mock.calls[0][0].input);
+    expect(context).toMatchObject({ sourceMode: 'learning', learningContext });
+    expect(context.selectedSceneFeatures).toEqual(scene);
+    const history = await request(app).get('/api/users/learning-creative/challenge-instances');
+    expect(history.body.data[0]).toEqual(generated.body.data);
+    await request(app).post(`/api/sessions/${sessionId}/creative-challenge`).send({ learningContext });
     expect(parse).toHaveBeenCalledTimes(1);
   });
 
