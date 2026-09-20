@@ -1,10 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:camera/camera.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 import '../data/mock_data.dart';
 import '../data/models.dart';
-import '../services/api_client.dart';
 import '../widgets/app_transitions.dart';
 import '../widgets/circle_icon_button.dart';
 import '../widgets/line_icon.dart';
@@ -84,33 +86,50 @@ class _LearnScanScreenState extends State<LearnScanScreen>
     }
   }
 
-  Future<void> _goToAnalyzing() async {
-    if (_capturing) return;
-    _capturing = true;
-    await _captureAndAnalyze();
-    if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      risePageRoute(LearnAnalyzingScreen(origin: widget.origin)),
+  /// Capture from the live camera, or allow selecting a file if there is no
+  /// camera (common on desktops or when permission was denied).
+  Future<Uint8List?> _captureImage() async {
+    final controller = _controller;
+    if (controller != null && controller.value.isInitialized) {
+      final photo = await controller.takePicture();
+      return photo.readAsBytes();
+    }
+    // Continuous mode samples a camera frame; it should not open a file
+    // picker automatically when there is no camera available.
+    if (widget.mode != ScanMode.photo) return null;
+    final photo = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
     );
+    return photo?.readAsBytes();
   }
 
-  /// Takes a photo with the live camera and sends it to the backend's
-  /// OpenCV pipeline, replacing [currentSceneAnalysis] with the real
-  /// result. Silently keeps the previous scene on any failure (camera
-  /// unavailable, backend offline) so the flow still works end to end.
-  Future<void> _captureAndAnalyze() async {
-    final controller = _controller;
-    if (controller == null || !controller.value.isInitialized) return;
+  Future<void> _goToAnalyzing() async {
+    if (_capturing || !mounted) return;
+    setState(() => _capturing = true);
     try {
-      final photo = await controller.takePicture();
-      final bytes = await photo.readAsBytes();
-      final json = await ApiClient().analyzeScan(bytes);
-      currentSceneAnalysis = SceneAnalysis.fromCvJson(
-        json,
-        concepts: currentSceneAnalysis.concepts,
+      final bytes = await _captureImage();
+      if (!mounted) return;
+      if (bytes == null || bytes.isEmpty) {
+        if (widget.mode == ScanMode.continuous) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Camera unavailable. Try photo mode.')),
+          );
+        }
+        return;
+      }
+      Navigator.of(context).pushReplacement(
+        risePageRoute(
+          LearnAnalyzingScreen(imageBytes: bytes, origin: widget.origin),
+        ),
       );
-    } catch (_) {
-      // Keep the previous currentSceneAnalysis.
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not capture photo: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => _capturing = false);
     }
   }
 
@@ -246,7 +265,7 @@ class _LearnScanScreenState extends State<LearnScanScreen>
                   const SizedBox(height: 22),
                   if (widget.mode == ScanMode.photo)
                     GestureDetector(
-                      onTap: _goToAnalyzing,
+                      onTap: _capturing ? null : _goToAnalyzing,
                       child: Container(
                         width: 68,
                         height: 68,
