@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { CircleIconButton, AtelierButton } from "@/components/AtelierButton";
+import { WonderlyLogo } from "@/components/WonderlyLogo";
 
 /** Ports lib/screens/home_screen.dart. */
 export default function HomePage() {
@@ -13,7 +14,7 @@ export default function HomePage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ width: 38 }} />
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 26, height: 26, borderRadius: "50%", background: "var(--ink)", display: "inline-block" }} />
+            <WonderlyLogo size={26} />
             <span className="mono-label" style={{ fontSize: 13, letterSpacing: 3 }}>
               wonderly
             </span>
@@ -80,8 +81,16 @@ function ChecklistItem({ label, rotate }: { label: string; rotate: number }) {
           borderRadius: 6,
           border: "1.4px solid var(--ink)",
           background: "var(--paper)",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
         }}
-      />
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 12.5l5 5L20 6" />
+        </svg>
+      </span>
       <span className="sketch-body" style={{ fontSize: 15 }}>
         {label}
       </span>
