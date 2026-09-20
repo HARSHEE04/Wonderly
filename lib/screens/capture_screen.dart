@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../theme/app_theme.dart';
 import '../data/models.dart';
 import '../widgets/app_transitions.dart';
+import '../widgets/atelier_button.dart';
 import '../widgets/circle_icon_button.dart';
 import '../widgets/line_icon.dart';
 import '../widgets/paper_texture.dart';
 import '../widgets/viewfinder_frame.dart';
 import 'capture_preview_screen.dart';
 
-/// Mock camera used to photograph the physical, finished artwork. Real
-/// device-camera integration is out of scope for this wireframe — tapping
-/// the shutter simulates a capture.
-class CaptureScreen extends StatelessWidget {
+/// Lets the artist upload a real photo of their finished, physical artwork
+/// so it can be saved into the Library (used by both Learn and Create).
+class CaptureScreen extends StatefulWidget {
   final CreativeChallenge challenge;
   final String origin;
   final String? conceptTitle;
@@ -25,6 +26,46 @@ class CaptureScreen extends StatelessWidget {
     this.conceptTitle,
     this.sessionId,
   });
+
+  @override
+  State<CaptureScreen> createState() => _CaptureScreenState();
+}
+
+class _CaptureScreenState extends State<CaptureScreen> {
+  bool _picking = false;
+  String? _error;
+
+  Future<void> _uploadPhoto() async {
+    setState(() {
+      _picking = true;
+      _error = null;
+    });
+    try {
+      final photo = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 90,
+      );
+      if (photo == null) return;
+      final bytes = await photo.readAsBytes();
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        risePageRoute(
+          CapturePreviewScreen(
+            challenge: widget.challenge,
+            origin: widget.origin,
+            conceptTitle: widget.conceptTitle,
+            sessionId: widget.sessionId,
+            imageBytes: bytes,
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _error = 'Could not upload photo: $error');
+    } finally {
+      if (mounted) setState(() => _picking = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +88,7 @@ class CaptureScreen extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(
-                        'photograph your artwork',
+                        'upload your artwork',
                         style: monoLabel(color: AppColors.inkSoft),
                       ),
                       const Spacer(),
@@ -70,12 +111,33 @@ class CaptureScreen extends StatelessWidget {
                           ),
                           clipBehavior: Clip.antiAlias,
                           child: Center(
-                            child: LineIcon(
-                              glyph: IconGlyph.spark,
-                              size: 90,
-                              color: AppColors.paperLight.withValues(
-                                alpha: 0.55,
-                              ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                LineIcon(
+                                  glyph: IconGlyph.spark,
+                                  size: 72,
+                                  color: AppColors.paperLight.withValues(
+                                    alpha: 0.55,
+                                  ),
+                                ),
+                                if (_error != null) ...[
+                                  const SizedBox(height: 16),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                    ),
+                                    child: Text(
+                                      _error!,
+                                      textAlign: TextAlign.center,
+                                      style: monoLabel(
+                                        color: AppColors.paperLight,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                         ),
@@ -84,35 +146,10 @@ class CaptureScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 22),
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pushReplacement(
-                      risePageRoute(
-                        CapturePreviewScreen(
-                          challenge: challenge,
-                          origin: origin,
-                          conceptTitle: conceptTitle,
-                          sessionId: sessionId,
-                        ),
-                      ),
-                    ),
-                    child: Container(
-                      width: 68,
-                      height: 68,
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.ink.withValues(alpha: 0.7),
-                          width: 2,
-                        ),
-                      ),
-                      child: const DecoratedBox(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.ink,
-                        ),
-                      ),
-                    ),
+                  AtelierButton(
+                    label: _picking ? 'uploading…' : 'upload a photo',
+                    fill: AppColors.ink,
+                    onTap: _picking ? null : _uploadPhoto,
                   ),
                   const SizedBox(height: 10),
                 ],

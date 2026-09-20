@@ -131,16 +131,22 @@ class _LibraryCard extends StatelessWidget {
         children: [
           AspectRatio(
             aspectRatio: 1.1,
-            child: Container(
-              color: entry.photoTint,
-              child: Center(
-                child: LineIcon(
-                  glyph: entry.photoGlyph,
-                  size: 44,
-                  color: AppColors.ink.withValues(alpha: 0.6),
-                ),
-              ),
-            ),
+            child: entry.photoBytes != null
+                ? Image.memory(
+                    entry.photoBytes!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                  )
+                : Container(
+                    color: entry.photoTint,
+                    child: Center(
+                      child: LineIcon(
+                        glyph: entry.photoGlyph,
+                        size: 44,
+                        color: AppColors.ink.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ),
           ),
           Expanded(
             child: Padding(

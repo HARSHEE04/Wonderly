@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 /// Which hand-drawn line icon represents a swatch, concept, or mock photo.
@@ -306,7 +308,8 @@ class CreativeChallenge {
 /// One saved piece in the user's Library — a photographed physical artwork.
 /// Loosely mirrors the backend's `Artwork` model (`src/database/models.ts`):
 /// `challengeTitle`~title, `photoTint`/`photoGlyph` stand in for
-/// `assetUrl`/`thumbnailUrl` until there's a real photo to store.
+/// `assetUrl`/`thumbnailUrl` for entries with no uploaded photo (e.g. synced
+/// from the backend, or seed data).
 class LibraryEntry {
   final String id;
   final String challengeTitle;
@@ -315,6 +318,10 @@ class LibraryEntry {
   final Color photoTint;
   final IconGlyph photoGlyph;
   final DateTime date;
+
+  /// The user's actual uploaded photo of their finished artwork, if any —
+  /// takes priority over [photoTint]/[photoGlyph] when rendering this entry.
+  final Uint8List? photoBytes;
 
   /// Backend `Artwork.id` (`src/database/repository.ts`) when this entry was
   /// synced from `GET /api/users/:userId/artworks`; null for local-only or
@@ -329,6 +336,7 @@ class LibraryEntry {
     required this.photoTint,
     required this.photoGlyph,
     required this.date,
+    this.photoBytes,
     this.remoteId,
   });
 }

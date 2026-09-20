@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
@@ -19,6 +20,7 @@ class CapturePreviewScreen extends StatelessWidget {
   final String origin;
   final String? conceptTitle;
   final String? sessionId;
+  final Uint8List? imageBytes;
 
   const CapturePreviewScreen({
     super.key,
@@ -26,6 +28,7 @@ class CapturePreviewScreen extends StatelessWidget {
     required this.origin,
     this.conceptTitle,
     this.sessionId,
+    this.imageBytes,
   });
 
   @override
@@ -72,13 +75,21 @@ class CapturePreviewScreen extends StatelessWidget {
                               color: tint,
                               borderRadius: BorderRadius.circular(18),
                             ),
-                            child: Center(
-                              child: LineIcon(
-                                glyph: glyph,
-                                size: 100,
-                                color: AppColors.ink.withValues(alpha: 0.7),
-                              ),
-                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: imageBytes != null
+                                ? Image.memory(
+                                    imageBytes!,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  )
+                                : Center(
+                                    child: LineIcon(
+                                      glyph: glyph,
+                                      size: 100,
+                                      color: AppColors.ink.withValues(alpha: 0.7),
+                                    ),
+                                  ),
                           ),
                         ),
                         Positioned(
@@ -129,6 +140,7 @@ class CapturePreviewScreen extends StatelessWidget {
                                 conceptTitle: conceptTitle,
                                 photoTint: tint,
                                 photoGlyph: glyph,
+                                photoBytes: imageBytes,
                                 date: DateTime.now(),
                               ),
                             );
