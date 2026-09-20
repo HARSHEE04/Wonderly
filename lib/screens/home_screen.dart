@@ -97,7 +97,7 @@ class HomeScreen extends StatelessWidget {
                     onTap: () => Navigator.of(context).push(
                       risePageRoute(
                         const LearnScanScreen(
-                          mode: ScanMode.photo,
+                          mode: ScanMode.continuous,
                           origin: 'Create',
                         ),
                       ),

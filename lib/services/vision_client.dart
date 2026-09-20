@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 import 'api_client.dart';
@@ -8,18 +9,26 @@ import 'api_client.dart';
 /// Real analysis returned by the Python Vision service.
 class VisionAnalysisResult {
   final Map<String, dynamic> sceneAnalysis;
-  final LearnSessionResult sessionResult;
+  final Map<String, dynamic>? decision;
 
-  const VisionAnalysisResult({
-    required this.sceneAnalysis,
-    required this.sessionResult,
-  });
+  const VisionAnalysisResult({required this.sceneAnalysis, this.decision});
 }
 
 class VisionClient {
-  /// For Flutter web running on the same computer as the Python service.
+  /// An explicit override, e.g. `--dart-define=VISION_BASE_URL=http://192.168.1.23:8001`
+  /// — required on a physical device or simulator, where `localhost` means
+  /// the device itself, not the Mac running this service.
+  static const String _override = String.fromEnvironment('VISION_BASE_URL');
+
+  /// Mirrors [ApiClient.baseUrl]'s host resolution: on web, read the page's
+  /// own host; on a native build with no [_override], fall back to
+  /// `127.0.0.1`, which only works on Flutter web/desktop or the iOS
+  /// Simulator (it shares the Mac's network stack) — not a physical device.
   static String get baseUrl {
-    final host = Uri.base.host.isNotEmpty ? Uri.base.host : '127.0.0.1';
+    if (_override.isNotEmpty) return _override;
+    final host = kIsWeb
+        ? (Uri.base.host.isNotEmpty ? Uri.base.host : '127.0.0.1')
+        : '127.0.0.1';
     return 'http://$host:8001';
   }
 
@@ -72,10 +81,7 @@ class VisionClient {
 
     return VisionAnalysisResult(
       sceneAnalysis: sceneAnalysis,
-      sessionResult: LearnSessionResult(
-        sessionId: sessionId,
-        decision: decision,
-      ),
+      decision: decision,
     );
   }
 }

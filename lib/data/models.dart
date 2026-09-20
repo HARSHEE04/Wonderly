@@ -157,22 +157,32 @@ class SceneAnalysis {
     ...objects,
   ];
 
-  /// Builds a [SceneAnalysis] from the real OpenCV output
-  /// (`computer_vision/scene_analysis.py`, proxied through
-  /// `POST /api/scan/analyze`). `concepts` still comes from the
-  /// teammate-owned Gemini/CV pipeline this doesn't touch, so the caller
-  /// carries the previous scene's concepts forward.
+  /// Builds a [SceneAnalysis] from the real OpenCV output returned by
+  /// `computer_vision/vision_service.py` (via `VisionClient`, port 8001).
+  /// `concepts` still comes from the teammate-owned Gemini/CV pipeline this
+  /// doesn't touch, so the caller carries the previous scene's concepts
+  /// forward.
   factory SceneAnalysis.fromCvJson(
     Map<String, dynamic> json, {
     required List<ArtConcept> concepts,
   }) {
-    List<Supply> supplies(
-      String key,
-      SwatchKind kind,
-      IconGlyph glyph,
-      Color fallbackColor,
-    ) {
+    // The real dominant colors OpenCV picked up from this exact photo.
+    // Shapes/lines/textures/patterns/objects don't carry their own color
+    // in the CV output, so they're tinted from this real palette (cycled)
+    // instead of a fixed placeholder — every swatch reflects the actual
+    // scene, not a constant.
+    final detectedColors = [
+      for (final item
+          in ((json['colors'] as List?) ?? const []).cast<Map<String, dynamic>>())
+        if (item['hex'] != null) _colorFromHex(item['hex'] as String),
+    ];
+
+    // Only reached if OpenCV found literally zero colors in the photo.
+    const neutralFallback = Color(0xFF9AA0A6);
+
+    List<Supply> supplies(String key, SwatchKind kind, IconGlyph glyph) {
       final items = (json[key] as List?) ?? const [];
+      var accentIndex = 0;
       return [
         for (final item in items.cast<Map<String, dynamic>>())
           Supply(
@@ -180,44 +190,21 @@ class SceneAnalysis {
             kind: kind,
             color: item['hex'] != null
                 ? _colorFromHex(item['hex'] as String)
-                : fallbackColor,
+                : (detectedColors.isEmpty
+                      ? neutralFallback
+                      : detectedColors[accentIndex++ % detectedColors.length]),
             glyph: glyph,
           ),
       ];
     }
 
     return SceneAnalysis(
-      colors: supplies(
-        'colors',
-        SwatchKind.color,
-        IconGlyph.circle,
-        Colors.grey,
-      ),
-      shapes: supplies(
-        'shapes',
-        SwatchKind.shape,
-        IconGlyph.circle,
-        Colors.grey,
-      ),
-      lines: supplies('lines', SwatchKind.line, IconGlyph.lines, Colors.grey),
-      textures: supplies(
-        'textures',
-        SwatchKind.texture,
-        IconGlyph.wave,
-        Colors.grey,
-      ),
-      patterns: supplies(
-        'patterns',
-        SwatchKind.pattern,
-        IconGlyph.stripes,
-        Colors.grey,
-      ),
-      objects: supplies(
-        'semanticObjects',
-        SwatchKind.object,
-        IconGlyph.camera,
-        Colors.grey,
-      ),
+      colors: supplies('colors', SwatchKind.color, IconGlyph.circle),
+      shapes: supplies('shapes', SwatchKind.shape, IconGlyph.circle),
+      lines: supplies('lines', SwatchKind.line, IconGlyph.lines),
+      textures: supplies('textures', SwatchKind.texture, IconGlyph.wave),
+      patterns: supplies('patterns', SwatchKind.pattern, IconGlyph.stripes),
+      objects: supplies('semanticObjects', SwatchKind.object, IconGlyph.camera),
       concepts: concepts,
     );
   }

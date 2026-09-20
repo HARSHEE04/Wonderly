@@ -11,7 +11,7 @@ from visual_features import extract_visual_features
 from scene_analysis import to_scene_analysis
 
 
-HOST = "127.0.0.1"
+HOST = "0.0.0.0"
 PORT = 8001
 
 BACKEND_URL = "http://127.0.0.1:4000"
