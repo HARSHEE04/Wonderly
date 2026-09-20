@@ -54,6 +54,16 @@ export default function HomePage() {
           fontSize={17}
           onTap={() => router.push("/learn")}
         />
+        <div style={{ height: 12 }} />
+        <AtelierButton
+          label="peer learning"
+          fill="var(--paper-light)"
+          textColor="var(--ink)"
+          tapeColor="var(--tape-green)"
+          tapeOnLeft
+          fontSize={17}
+          onTap={() => router.push("/peer-learning")}
+        />
       </div>
     </div>
   );

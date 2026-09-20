@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 
 import '../theme/app_theme.dart';
 import '../data/models.dart';
-import '../peer_learning/peer_discovery_screen.dart';
 import '../widgets/app_transitions.dart';
 import '../widgets/atelier_button.dart';
 import '../widgets/brand_mark.dart';
@@ -115,18 +114,6 @@ class HomeScreen extends StatelessWidget {
                     onTap: () =>
                         Navigator.of(context)
                             .push(risePageRoute(const LearnModeScreen())),
-                  ),
-                  const SizedBox(height: 12),
-                  AtelierButton(
-                    label: 'peer learning',
-                    fill: AppColors.paperLight,
-                    textColor: AppColors.ink,
-                    tapeColor: AppColors.tapeGreen,
-                    tapeOnLeft: true,
-                    fontSize: 17,
-                    onTap: () =>
-                        Navigator.of(context)
-                            .push(risePageRoute(const PeerDiscoveryScreen())),
                   ),
                   const SizedBox(height: 28),
                 ],

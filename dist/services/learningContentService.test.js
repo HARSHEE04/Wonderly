@@ -18,9 +18,17 @@ describe('learningContentService', () => {
         await expect(generateLearningContent(emptyScene)).rejects.toThrow('No detected visual elements');
         expect(parseMock).not.toHaveBeenCalled();
     });
-    it('throws a configuration error when OPENAI_API_KEY is missing', async () => {
+    it('returns local learning content when OPENAI_API_KEY is missing', async () => {
         env.openaiApiKey = '';
-        await expect(generateLearningContent(mockScenes.learningModeDemo)).rejects.toThrow('not configured');
+        const result = await generateLearningContent(mockScenes.learningModeDemo);
+        expect(result.summary).toContain('palette');
+        expect(result.elements.map((element) => element.category)).toEqual([
+            'color',
+            'shape',
+            'line',
+            'texture',
+            'pattern'
+        ]);
         expect(parseMock).not.toHaveBeenCalled();
     });
     it('returns validated structured content for a populated scene', async () => {

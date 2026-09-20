@@ -13,16 +13,44 @@ describe('backend API', () => {
         expect(createResponse.status).toBe(201);
         const sessionId = createResponse.body.data.id;
         expect(sessionId).toBeTruthy();
+        const scene = { ...mockScenes.characterFriendly, semanticObjects: [] };
         const sceneResponse = await request(app)
             .post(`/api/sessions/${sessionId}/scene-analysis`)
-            .send(mockScenes.characterFriendly);
+            .send(scene);
         expect(sceneResponse.status).toBe(200);
-        expect(sceneResponse.body.data.recommendation.decision.challengeType).toBe('character');
+        const decision = sceneResponse.body.data.recommendation.decision;
+        expect(decision.challengeType).toBe('character');
+        const attachedSessionResponse = await request(app).get(`/api/sessions/${sessionId}`);
+        expect(attachedSessionResponse.status).toBe(200);
+        expect(attachedSessionResponse.body.data.sceneAnalysis.semanticObjects).toEqual([]);
+        expect(attachedSessionResponse.body.data.selectedChallengeTemplateId).toBe(decision.challengeTemplateId);
+        expect(attachedSessionResponse.body.data.challengeDecision).toEqual(decision);
+        const challengeResponse = await request(app)
+            .post(`/api/sessions/${sessionId}/challenge-instance`)
+            .send({
+            title: 'Build Rhythm From Vertical Lines',
+            instructions: 'Repeat the scene lines and use its dominant color.'
+        });
+        expect(challengeResponse.status).toBe(201);
+        const challengeInstance = challengeResponse.body.data;
+        expect(challengeInstance.sessionId).toBe(sessionId);
+        expect(challengeInstance.templateId).toBe(decision.challengeTemplateId);
+        expect(challengeInstance.title).toBe('Build Rhythm From Vertical Lines');
+        expect(challengeInstance.instructions).toBe('Repeat the scene lines and use its dominant color.');
+        expect(challengeInstance.usedSceneFeatures).toEqual(decision.matchedIngredients);
+        const storedChallengeResponse = await request(app).get(`/api/sessions/${sessionId}/challenge-instance`);
+        expect(storedChallengeResponse.status).toBe(200);
+        expect(storedChallengeResponse.body.data.id).toBe(challengeInstance.id);
+        expect(storedChallengeResponse.body.data.title).toBe(challengeInstance.title);
         const completeResponse = await request(app)
             .post(`/api/sessions/${sessionId}/complete`)
             .send({ userId: 'test-user-1', artworkMetadata: { title: 'My Test Art' } });
         expect(completeResponse.status).toBe(200);
         expect(completeResponse.body.data.status).toBe('completed');
+        expect(completeResponse.body.data.result.completion.templateId).toBe(decision.challengeTemplateId);
+        expect(completeResponse.body.data.result.completion.templateId).not.toBe('unknown');
+        expect(completeResponse.body.data.result.completion.challengeInstanceId).toBe(challengeInstance.id);
+        expect(completeResponse.body.data.result.artwork.challengeInstanceId).toBe(challengeInstance.id);
         const progressResponse = await request(app).get('/api/users/test-user-1/progress');
         expect(progressResponse.status).toBe(200);
         expect(progressResponse.body.data.completedChallengeCount).toBe(1);
@@ -44,6 +72,16 @@ describe('backend API', () => {
         const response = await request(app).post('/api/challenges/recommend').send({ sceneAnalysis: emptyScene });
         expect(response.status).toBe(200);
         expect(response.body.data.status).toBe('insufficient_features');
+    });
+    it('records learning sessions as learning-sourced challenge instances', async () => {
+        const createResponse = await request(app).post('/api/sessions').send({ userId: 'test-learning-source', mode: 'learning' });
+        const sessionId = createResponse.body.data.id;
+        await request(app).post(`/api/sessions/${sessionId}/scene-analysis`).send(mockScenes.characterFriendly);
+        const challengeResponse = await request(app)
+            .post(`/api/sessions/${sessionId}/challenge-instance`)
+            .send({ title: 'Practice Symmetry', instructions: 'Use the scene to practice symmetry.' });
+        expect(challengeResponse.status).toBe(201);
+        expect(challengeResponse.body.data.sourceMode).toBe('learning');
     });
     it('stores artwork metadata directly through the artworks endpoint', async () => {
         const createResponse = await request(app).post('/api/sessions').send({ userId: 'test-user-3' });

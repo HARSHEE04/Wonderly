@@ -4,7 +4,8 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CircleIconButton, AtelierButton } from "@/components/AtelierButton";
 import { LineIcon } from "@/components/LineIcon";
-import { flowState } from "@/lib/appState";
+import { flowState, libraryStore } from "@/lib/appState";
+import { completeSession, demoUserId } from "@/lib/apiClient";
 
 /** Ports lib/screens/capture_screen.dart — upload a real photo of the finished artwork. */
 export default function CapturePage() {
@@ -13,6 +14,35 @@ export default function CapturePage() {
   const [picking, setPicking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  function saveUploadedArtwork(imageDataUrl: string) {
+    const origin = flowState.origin;
+    const challenge = flowState.challenge;
+    const tint = origin === "Create" ? "var(--marigold-tint)" : "var(--teal-tint)";
+    const glyph = origin === "Create" ? "spark" : "symmetry";
+
+    flowState.capturedImageDataUrl = imageDataUrl;
+    libraryStore.add({
+      id: `local-${Date.now()}`,
+      challengeTitle: challenge?.title ?? "Untitled challenge",
+      origin,
+      conceptTitle: flowState.conceptTitle,
+      photoTint: tint,
+      photoGlyph: glyph,
+      date: new Date().toISOString(),
+      photoDataUrl: imageDataUrl,
+    });
+
+    if (flowState.sessionId) {
+      void completeSession(flowState.sessionId, demoUserId, challenge?.challengeType, {
+        title: challenge?.title,
+        origin,
+        conceptTitle: flowState.conceptTitle,
+      }).catch(() => {
+        // Keep the demo flow moving offline; the local library save already happened.
+      });
+    }
+  }
+
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -20,9 +50,14 @@ export default function CapturePage() {
     setError(null);
     const reader = new FileReader();
     reader.onload = () => {
-      flowState.capturedImageDataUrl = reader.result as string;
-      setPicking(false);
-      router.push("/capture/preview");
+      try {
+        saveUploadedArtwork(reader.result as string);
+        setPicking(false);
+        router.push("/saved");
+      } catch {
+        setPicking(false);
+        setError("Could not save photo. Please try again.");
+      }
     };
     reader.onerror = () => {
       setPicking(false);
@@ -69,7 +104,7 @@ export default function CapturePage() {
         <div style={{ height: 20 }} />
         <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
         <AtelierButton
-          label={picking ? "uploading…" : "upload a photo"}
+          label={picking ? "saving…" : "upload a photo"}
           fill="var(--ink)"
           disabled={picking}
           onTap={() => inputRef.current?.click()}

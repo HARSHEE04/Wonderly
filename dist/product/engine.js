@@ -247,14 +247,16 @@ export function recommendChallenge(scene, templates = defaultChallengeTemplates,
         }))
     };
 }
-export function buildGeminiContext(sessionId, scene, decision) {
+export function buildCreativeGenerationContext(sessionId, scene, decision, options = {}) {
     return {
         sessionId,
+        sourceMode: options.sourceMode ?? 'standalone',
         challengeDecision: decision,
         selectedSceneFeatures: scene,
-        personalization: decision.personalizationContext ?? {
-            underusedConcepts: [],
-            recentChallengeTypes: []
-        }
+        personalization: {
+            underusedConcepts: decision.personalizationContext?.underusedConcepts ?? [],
+            recentChallengeTypes: decision.personalizationContext?.recentChallengeTypes ?? []
+        },
+        ...(options.learningContext ? { learningContext: options.learningContext } : {})
     };
 }

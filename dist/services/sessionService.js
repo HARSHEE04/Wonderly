@@ -1,7 +1,7 @@
-import { buildGeminiContext, buildPersonalizationContext, defaultChallengeTemplates, recommendChallenge, summarizeExposure } from '../product/engine.js';
+import { buildCreativeGenerationContext, buildPersonalizationContext, defaultChallengeTemplates, recommendChallenge, summarizeExposure } from '../product/engine.js';
 import { ApiError } from '../core/errors.js';
 import { mockScenes } from '../data/mockScenes.js';
-import { createSessionRecord, getSessionRecord, updateSessionSceneRecord, updateSessionDecisionRecord, completeSessionRecord, recordChallengeCompletion, getCompletionsForUser, createArtworkRecord, getArtworksForUserRecord } from '../database/repository.js';
+import { createSessionRecord, createChallengeInstanceRecord, getSessionRecord, getChallengeInstanceBySessionRecord, updateSessionSceneRecord, updateSessionDecisionRecord, completeSessionRecord, recordChallengeCompletion, getCompletionsForUser, createArtworkRecord, getArtworksForUserRecord } from '../database/repository.js';
 import { getLearningProgress, markConceptsSeen, markConceptsPracticed } from './learningProgressService.js';
 export async function createSession(userId, mode = 'creative') {
     return createSessionRecord(userId, mode);
@@ -11,6 +11,33 @@ export async function getSession(sessionId) {
 }
 export async function updateSessionScene(sessionId, scene) {
     return updateSessionSceneRecord(sessionId, scene);
+}
+export async function createChallengeInstance(sessionId, title, instructions) {
+    const session = await getSessionRecord(sessionId);
+    if (!session) {
+        throw new ApiError('Session not found', 404);
+    }
+    const decision = session.challengeDecision;
+    if (!decision || !session.selectedChallengeTemplateId) {
+        throw new ApiError('A challenge decision must be selected before creating a challenge instance', 409);
+    }
+    const template = defaultChallengeTemplates.find((item) => item.id === decision.challengeTemplateId);
+    return createChallengeInstanceRecord({
+        userId: session.userId,
+        sessionId,
+        templateId: decision.challengeTemplateId,
+        challengeType: decision.challengeType,
+        difficulty: decision.difficulty,
+        sourceMode: session.mode === 'learning' ? 'learning' : 'standalone',
+        title,
+        instructions,
+        focusConcepts: template?.concepts ?? [],
+        usedSceneFeatures: decision.matchedIngredients,
+        whyThisFitsScene: decision.reasonCodes
+    });
+}
+export async function getChallengeInstance(sessionId) {
+    return getChallengeInstanceBySessionRecord(sessionId);
 }
 function buildConceptExposureFromCompletions(completions) {
     const exposure = {};
@@ -73,7 +100,7 @@ export async function recommendForScene(scene, userId, sessionId, historyOverrid
         decision,
         eligibleChallenges: recommendation.eligibleChallenges,
         recommendation: decision,
-        context: buildGeminiContext(sessionId ?? 'session-id', scene, decision),
+        context: buildCreativeGenerationContext(sessionId ?? 'session-id', scene, decision),
         personalization: buildPersonalizationContext(history)
     };
 }
@@ -92,9 +119,11 @@ export async function completeSession(sessionId, userId, challengeType, metadata
     const template = defaultChallengeTemplates.find((item) => item.id === templateId);
     const type = challengeType ?? session.challengeDecision?.challengeType ?? 'unknown';
     const concepts = template?.concepts ?? [];
+    const challengeInstance = await getChallengeInstanceBySessionRecord(sessionId);
     const completion = await recordChallengeCompletion({
         userId,
         sessionId,
+        challengeInstanceId: challengeInstance?.id,
         templateId,
         challengeType: type,
         concepts
@@ -107,6 +136,7 @@ export async function completeSession(sessionId, userId, challengeType, metadata
         artwork = await createArtworkRecord({
             userId,
             sessionId,
+            challengeInstanceId: challengeInstance?.id,
             challengeTemplateId: templateId,
             title: metadata.title,
             assetUrl: metadata.assetUrl,
@@ -143,9 +173,11 @@ export async function getArtworksForUser(userId) {
     return getArtworksForUserRecord(userId);
 }
 export async function addArtwork(metadata, userId, sessionId, challengeTemplateId) {
+    const challengeInstance = await getChallengeInstanceBySessionRecord(sessionId);
     return createArtworkRecord({
         userId,
         sessionId,
+        challengeInstanceId: challengeInstance?.id,
         challengeTemplateId,
         title: metadata.title,
         assetUrl: metadata.assetUrl,
